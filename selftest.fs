@@ -449,6 +449,34 @@ T{ 1 2 2>R R> R> -> 2 1 }T
 OK
 
 ( --------------------------------------------------------------------------- )
+." Other core words "
+
+T{  1  2 MAX ->  2 }T
+T{ -1  2 MAX ->  2 }T
+T{  2  1 MAX ->  2 }T
+T{  2 -1 MAX ->  2 }T
+T{ -1 -2 MAX -> -1 }T
+
+T{  1  2 MIN ->  1 }T
+T{ -1  2 MIN -> -1 }T
+T{  2  1 MIN ->  1 }T
+T{  2 -1 MIN -> -1 }T
+T{ -1 -2 MIN -> -2 }T
+
+: "LEFT S" LEFT" ;
+: "LONG S" LONG" ;
+: "LONGING S" LONGING" ;
+: "RIGHT S" RIGHT" ;
+T{ "LEFT "RIGHT COMPARE -> -1 }T
+T{ "LEFT "LEFT COMPARE -> 0 }T
+T{ "LONG "LEFT COMPARE -> 1 }T
+T{ "LONG "LONGING COMPARE -> -1 }T
+T{ "LONGING "LONG COMPARE -> 1 }T
+FORGET "LEFT
+
+OK
+
+( --------------------------------------------------------------------------- )
 ( Final test... let's make sure execution stops after we say BYE )
 ." Checking for stack leaks ..."
 DEPTH 0= ASSERT

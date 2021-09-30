@@ -323,13 +323,13 @@
 	CELL-			( adjust because S0 was on the stack when we pushed DSP )
 ;
 
-( 
+(
   .S prints the contents of the stack.
 
   It does not alter the stack making it very useful for debugging.
 )
 : .S		( -- )
-	[CHAR] < EMIT DEPTH 1 CELLS / U. '>' EMIT SPACE	
+	[CHAR] < EMIT DEPTH 1 CELLS / U. '>' EMIT SPACE
 	S0 @
 	BEGIN
 		DUP DSP@ CELL+ CELL+ >
@@ -763,6 +763,22 @@
 	' RDROP DUP , , \ drop the loop control block
 ;
 
+( UNLOOP discards the loop control parameters from the top the return stack
+
+  Example usage:
+
+  : A-WORD
+	  0 DO
+		  A-TEST IF
+			  UNLOOP
+			  EXIT
+		  THEN
+	  LOOP
+  ;
+)
+: UNLOOP ( -- )
+	R> R> R> 2DROP >R
+;
 
 
 (
@@ -884,24 +900,49 @@
 	F_IMMED AND	( mask the F_IMMED flag and return it (as a truth value) )
 ;
 
-(
-	WORDS prints all the words defined in the dictionary, starting with the word defined most recently.
-	However it doesn't print hidden words.
+( MAX selects the greater of two signed values )
+:<> MAX ( n1 n2 -- n3 )
+	2DUP > IF DROP ELSE NIP THEN
+;
 
-	The implementation simply iterates backwards from LATEST using the link pointers.
-)
-: WORDS
-	LATEST @	( start at LATEST dictionary entry )
-	BEGIN
-		?DUP		( while link pointer is not null )
-	WHILE
-		DUP ?HIDDEN NOT IF	( ignore hidden words )
-			DUP ID.		( but if not hidden, print the word )
-			SPACE
+( MIN selects the lesser of two signed values )
+:<> MIN ( n1 n2 -- n3 )
+	2DUP < IF DROP ELSE NIP THEN
+;
+
+( COMPARE checks two strings for equality )
+:<> COMPARE ( c-addr1 u1 c-addr2 u2 -- n )
+	( first we'll compare the strings until one runs out of characters )
+	DUP 3 PICK MIN
+	0 DO
+		3 PICK I + C@
+		2 PICK I + C@
+		2DUP <> IF		( if the strings differ then bail out )
+			< IF
+				-1
+			ELSE
+				1
+			THEN
+			-ROT 2DROP	( drop c-addr2 u2 )
+			-ROT 2DROP	( drop c-addr1 u1 )
+			UNLOOP		( disard loop parameters )
+			EXIT
 		THEN
-		@		( dereference the link pointer - go to previous word )
-	REPEAT
-	CR
+		2DROP
+	LOOP
+
+	( strings are identical so far, directly compare u1/u2 instead )
+	NIP ROT DROP	( drop c-addr1 and c-addr2 )
+	2DUP <> IF
+		< IF
+			-1
+		ELSE
+			1
+		THEN
+	ELSE
+		2DROP
+		0
+	THEN
 ;
 
 (
