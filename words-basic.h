@@ -67,15 +67,15 @@ NATIVE(TWODUP, "2DUP") /* ( a b -- a b a b ) duplicate top two elements of stack
 	PUSH(dsp[1]);
 	NEXT();
 
-NATIVE(TWOSWAP, "2SWAP") /* ( a b -- b a b a ) swap top two pairs of elements of stack */
+NATIVE(TWOSWAP, "2SWAP") /* ( a b c d -- c d a b ) swap top two pairs of elements of stack */
 #undef  LINK
 #define LINK TWOSWAP
 	tmp = dsp[0];
-	dsp[0] = dsp[1];
-	dsp[1] = tmp;
+	dsp[0] = dsp[2];
+	dsp[2] = tmp;
 
-	tmp = dsp[2];
-	dsp[2] = dsp[3];
+	tmp = dsp[1];
+	dsp[1] = dsp[3];
 	dsp[3] = tmp;
 
 	NEXT();
