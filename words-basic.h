@@ -663,9 +663,9 @@ QNATIVE(LITSTRING)
 	ip += (tmp.u + sizeof(*ip) - 1) / sizeof(*ip); // skip past the string
 	NEXT();
 
-QNATIVE(TELL)
+QNATIVE(TYPE)
 #undef  LINK
-#define LINK TELL
+#define LINK TYPE
 	uintptr_t len = POP().u;
 	fwrite(POP().p, 1, len, stdout);
 	NEXT();

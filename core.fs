@@ -508,8 +508,8 @@
 	In immediate mode we just keep reading characters and printing them until we get to
 	the next double quote.
 
-	In compile mode we use S" to store the string, then add TELL afterwards:
-		LITSTRING <string length> <string rounded up to 4 bytes> TELL
+	In compile mode we use S" to store the string, then add TYPE afterwards:
+		LITSTRING <string length> <string rounded up to 4 bytes> TYPE
 
 	It may be interesting to note the use of [COMPILE] to turn the call to the immediate
 	word S" into compilation of that word.  It compiles it into the definition of .",
@@ -519,7 +519,7 @@
 : ." IMMEDIATE		( -- )
 	STATE @ IF	( compiling? )
 		[COMPILE] S"	( read the string, and compile LITSTRING, etc. )
-		' TELL ,	( compile the final TELL )
+		' TYPE ,	( compile the final TYPE )
 	ELSE
 		( In immediate mode, just read characters and print them until we get
 		  to the ending double quote. )
@@ -786,7 +786,7 @@
 									should be consumed / copied immediately.
 									FORTH string should not contain NULs.
 
-	For example, DUP STRLEN TELL prints a C string.
+	For example, DUP STRLEN TYPE prints a C string.
 )
 
 (
@@ -865,7 +865,7 @@
 : ID.
 	CELL+		( skip over the link pointer)
 	DUP STRLEN      ( convert C-string to Forth string )
-	TELL
+	TYPE
 ;
 
 (
@@ -1195,7 +1195,7 @@
 			[ CHAR S ] LITERAL EMIT '"' EMIT SPACE ( print S"<space> )
 			1 CELLS + DUP @		( get the length word )
 			SWAP 1 CELLS + SWAP		( end start+4 length )
-			2DUP TELL		( print the string )
+			2DUP TYPE		( print the string )
 			'"' EMIT SPACE		( finish the string with a final quote )
 			+ ALIGNED		( end start+4+len, aligned )
 			1 CELLS -		( because we're about to add 4 below )
@@ -1530,7 +1530,7 @@
 	n ARGV gets the nth command line argument.
 
 	For example to print the command name you would do:
-		0 ARGV TELL CR
+		0 ARGV TYPE CR
 )
 : ARGV ( n -- str u )
 	1+ CELLS S0 @ +	( get the address of argv[n] entry )
@@ -1543,7 +1543,7 @@
 	with a NULL pointer.
 
 	For example to print the first string in the environment you could do:
-		ENVIRON @ DUP STRLEN TELL
+		ENVIRON @ DUP STRLEN TYPE
 )
 : ENVIRON	( -- addr )
 	ARGC		( number of command line parameters on the stack to skip )
