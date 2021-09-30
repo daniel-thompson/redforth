@@ -89,14 +89,130 @@
 	2R> 2DROP
 ;
 
+( (STRING>NAME) is the inner-loop for STRING>NAME )
+: (STRING>NAME) ( c-addr u prev nt -- c-addr u prev TRUE | prev nt FALSE )
+	DUP NAME>STRING
+	5 PICK 5 PICK COMPARE
+	0= IF		( got it )
+		2SWAP 2DROP	( drop the search string )
+		FALSE
+	ELSE
+		SWAP DROP	( update prev )
+		TRUE
+	THEN
+;
+
+: STRING>NAME ( c-addr u -- nt limit )
+	HERE @ ' (STRING>NAME) GET-CURRENT TRAVERSE-WORDLIST
+	( -- prev nt )
+	DUP @		( follow link pointer )
+	ROT MAX		( keep highest of prev and next )
+;
+
 ( (WORDS) is the inner-loop for WORDS )
 : (WORDS) ( nt -- flag )
 	DUP ?HIDDEN NOT IF	( ignore hidden words )
-		DUP ID.		( but if not hidden, print the word )
+		DUP NAME>STRING TYPE ( print the word )
 		SPACE
 	THEN
-	DROP			
+	DROP
 	TRUE
+;
+
+
+( SEE decompiles a FORTH word.
+
+  Using the name token and limit from STRING>NAME we can start decompiling
+  the word starting from the data field area until we reach the limit.
+)
+: SEE	( -- )
+	WORD STRING>NAME
+			( nt limit === start-of-word end-of-word )
+	SWAP		( end-of-word start-of-word )
+
+	( begin the definition with : NAME [IMMEDIATE] )
+	[CHAR] : EMIT SPACE DUP ID. SPACE
+	DUP ?IMMEDIATE IF ." IMMEDIATE " THEN
+
+	>DFA		( get the data address, ie. points after
+	                  DOCOL | end-of-word start-of-data )
+
+	( now we start decompiling until we hit the end of the word )
+	BEGIN		( end start )
+		2DUP >
+	WHILE
+		DUP @		( end start codeword )
+
+		CASE
+		0 OF			( C builtins may have 0 termination...
+		                          ignore this!
+					)
+		ENDOF
+		' LIT OF		( is it LIT ? )
+			1 CELLS + DUP @		( get next word which is the
+			                          integer constant )
+			.			( and print it )
+		ENDOF
+		' LITSTRING OF		( is it LITSTRING ? )
+			[ CHAR S ] LITERAL EMIT '"' EMIT SPACE ( print S"<space> )
+			1 CELLS + DUP @		( get the length word )
+			SWAP 1 CELLS + SWAP		( end start+4 length )
+			2DUP TYPE		( print the string )
+			'"' EMIT SPACE		( finish the string with a
+			                          final quote )
+			+ ALIGNED		( end start+4+len, aligned )
+			1 CELLS -		( because we're about to add 4 below )
+		ENDOF
+		' 0BRANCH OF		( is it 0BRANCH ? )
+			." 0BRANCH ( "
+			1 CELLS + DUP @		( print the offset )
+			.
+			." ) "
+		ENDOF
+		' BRANCH OF		( is it BRANCH ? )
+			." BRANCH ( "
+			1 CELLS + DUP @		( print the offset )
+			.
+			." ) "
+		ENDOF
+		' ' OF			( is it ' (TICK) ? )
+			[ CHAR ' ] LITERAL EMIT SPACE
+			1 CELLS + DUP @		( get the next codeword )
+			CFA>			( and force it to be printed as a dictionary entry )
+			ID. SPACE
+		ENDOF
+		' EXIT OF		( is it EXIT? )
+			( We expect the last word to be EXIT, and if it is then
+			  we don't print it because EXIT is normally implied by
+			  ;.  EXIT can also appear in the middle of words, and
+			  then it needs to be printed.
+			)
+
+			2DUP			( end start end start )
+\	TODO:
+\         This code doesn't work for built-in words which have a terminating
+\         NULL value on variable length arrays. The replacement code below
+\         also hides exit when it is the last-but-one word (since there could
+\         be nothing useful in the final slot).
+\			1 CELLS +		( end start end start+4 )
+\			<> IF			( end start | we're not at the end )
+			2 CELLS +
+			> IF
+				." EXIT "
+			THEN
+		ENDOF
+					( default case: )
+			DUP			( in the default case we always need to DUP before using )
+			CFA>			( look up the codeword to get the dictionary entry )
+			ID. SPACE		( and print it )
+		ENDCASE
+
+		1 CELLS +	( end start+4 )
+	REPEAT
+
+	[CHAR] ; EMIT CR
+
+	2DROP		( restore stack )
 ;
 
 ( WORDS prints all the words defined in the dictionary.
