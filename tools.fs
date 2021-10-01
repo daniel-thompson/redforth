@@ -132,6 +132,173 @@
 	DROP 2DROP	( restore stack )
 ;
 
+: STRCAT	( c-addr1 u1 c-addr2 u2 )
+	3 PICK 3 PICK + 3 PICK 2SWAP
+	0 DO
+		DUP I + C@
+		3 PICK I + C!
+		SWAP 1+ SWAP
+	LOOP
+	DROP NIP NIP
+;
+
+: (?CFA)	( nt -- 0 FALSE | TRUE )
+	>CFA OVER = IF
+		0
+		FALSE
+	ELSE
+		TRUE
+	THEN
+
+;
+
+: ?CFA		( x -- x | 0 )
+	' (?CFA) GET-CURRENT TRAVERSE-WORDLIST
+	DUP 0= IF
+		DROP
+	ELSE
+		DROP
+		0
+	THEN
+;
+
+
+( MANGLE changes a Forth word name in to a C-compatible symbol name )
+: MANGLE	( c-addr1 u1 -- c-addr2 u2 )
+	HERE @ 64 + 0
+	BEGIN
+		2 PICK 0>
+	WHILE
+		3 PICK C@
+		CASE
+		( TODO: This is only to handle leading 2 characters... better done in a leading if condition )
+		[CHAR] 2 OF S" TWO"        STRCAT ENDOF
+		[CHAR] , OF S" COMMA"     STRCAT ENDOF
+		[CHAR] ; OF S" SEMICOLON" STRCAT ENDOF
+		[CHAR] @ OF S" FETCH"     STRCAT ENDOF
+		[CHAR] ! OF S" STORE"     STRCAT ENDOF
+		[CHAR] [ OF S" LBRAC"     STRCAT ENDOF
+		[CHAR] ] OF S" RBRAC"     STRCAT ENDOF
+		( default )
+			DUP 3 PICK 3 PICK + C!
+			SWAP 1+ SWAP
+		ENDCASE
+
+		2SWAP 1- SWAP 1+ SWAP 2SWAP	( next character )
+	REPEAT
+
+	( ... c-addr1+u1 0 c-addr2 u2 )
+	2SWAP 2DROP
+;
+
+( (>ROM) is the inner loop for SEE and it's roll is to decompiles the
+  codeword.
+
+  In order to handle immediate values (LIT, LITSTRING and ') we may
+  modify the value of ip in order to skip any embedded immediates.
+)
+: (>ROM)	( limit ip codeword -- limit ip )
+	CASE
+	0 OF			( C builtins may have 0 termination...
+	                          ignore this!
+				)
+	ENDOF
+	' LIT OF		( is it LIT ? )
+		1 CELLS + DUP @		( get next word which is the
+		                          integer constant )
+		DUP ?CFA IF
+			." 	COMPILE_TICK(" CFA> NAME>STRING TYPE ." )" CR	( and print it )
+		ELSE DUP DOCOL = IF
+				." 	COMPILE_LIT(&&DOCOL)" CR
+				DROP
+		ELSE
+			." 	COMPILE_LIT(" 0 .R ." )" CR	( and print it )
+		THEN THEN
+	ENDOF
+	' LITSTRING OF		( is it LITSTRING ? )
+		[ CHAR S ] LITERAL EMIT '"' EMIT SPACE ( print S"<space> )
+		1 CELLS + DUP @		( get the length word )
+		SWAP 1 CELLS + SWAP		( end start+4 length )
+		2DUP TYPE		( print the string )
+		'"' EMIT SPACE		( finish the string with a
+		                          final quote )
+		+ ALIGNED		( end start+4+len, aligned )
+		1 CELLS -		( because we're about to add 4 below )
+	ENDOF
+	' 0BRANCH OF		( is it 0BRANCH ? )
+		." 	COMPILE_0BRANCH("
+		1 CELLS + DUP @		( print the offset )
+		1 CELLS /
+		0 .R  ." )" CR
+	ENDOF
+	' BRANCH OF		( is it BRANCH ? )
+		." 	COMPILE_BRANCH("
+		1 CELLS + DUP @		( print the offset )
+		1 CELLS /
+		0 .R  ." )" CR
+	ENDOF
+	' ' OF			( is it ' (TICK) ? )
+		[ CHAR ' ] LITERAL EMIT SPACE
+		1 CELLS + DUP @		( get the next codeword )
+		CFA>			( and force it to be printed as a dictionary entry )
+		ID. SPACE
+	ENDOF
+	' EXIT OF		( is it EXIT? )
+		( We expect the last word to be EXIT, and if it is then
+		  we don't print it because EXIT is normally implied by
+		  ;.  EXIT can also appear in the middle of words, and
+		  then it needs to be printed.
+		)
+
+		2DUP			( end start end start )
+\	TODO:
+\         This code doesn't work for built-in words which have a terminating
+\         NULL value on variable length arrays. The replacement code below
+\         also hides exit when it is the last-but-one word (since there could
+\         be nothing useful in the final slot).
+\		1 CELLS +		( end start end start+4 )
+\		<> IF			( end start | we're not at the end )
+		2 CELLS +
+		> IF
+			." 	COMPILE(EXIT)" CR
+		THEN
+	ENDOF
+				( default case: )
+		DUP			( in the default case we always need to DUP before using )
+		CFA> NAME>STRING MANGLE	( look up the codeword to get the dictionary name )
+		." 	COMPILE(" TYPE ." )" CR
+	ENDCASE
+;
+
+
+
+( >ROM converts a Forth word into something the C compiler can absorb!
+
+  We cannot recover the full source because the control structures have been
+  replaced with branches. However it is sufficient to allow us to reconstruct
+  an equivalent.
+)
+: >ROM ( nt limit -- )
+
+	( begin the definition with the BUILTIN_FLAGS(C_NAME, "WORDNAME", <flags>) macro )
+	." BUILTIN_FLAGS("
+	OVER NAME>STRING MANGLE TYPE
+	." , " [CHAR] " EMIT OVER NAME>STRING TYPE [CHAR] " EMIT
+	." , 0"
+	OVER ?IMMEDIATE IF ."  | F_IMMED" THEN
+	OVER ?HIDDEN    IF ."  | F_HIDDEN" THEN
+	." )" CR
+
+	." #undef  LINK" CR
+	." #define " OVER NAME>STRING MANGLE TYPE CR
+
+	' (>ROM) -ROT
+	ITERATE-CODE
+
+	( finalize and we are done )
+	." 	COMPILE_EXIT()" CR CR
+;
+
 ( (SEE) is the inner loop for SEE and it's roll is to decompiles the
   codeword.
 

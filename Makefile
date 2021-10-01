@@ -18,6 +18,9 @@ redforth : $(OBJS)
 clean :
 	$(RM) redforth debug.fs filetest.txt $(OBJS)
 
+eyeball : redforth
+	cat core.fs tools.fs eyeball.fs | ./redforth
+
 check : redforth
 	cat core.fs tools.fs eyeball.fs | ./redforth | uniq -u > eyeball.log
 	[ `cat eyeball.log | wc -l` -eq 2 ] || (cat eyeball.log; false)
