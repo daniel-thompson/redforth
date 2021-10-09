@@ -100,11 +100,14 @@ label:                                                                         \
 
 /* Other helpers to allow us to "compile" codewords for use by BUILTINs */
 #define COMPILE(label) ((void **) &word_##label.cf.codeword),
-#define COMPILE_LIT(lit) COMPILE(LIT) (void *) lit,
-#define COMPILE_BRANCH(offset) COMPILE(BRANCH) (void *) (offset),
+#define COMPILE_0BRANCH(offset) COMPILE(ZBRANCH) (void *) ((offset) * sizeof(cell_t)),
+#define COMPILE_BRANCH(offset)  COMPILE(BRANCH)  (void *) ((offset) * sizeof(cell_t)),
 #define COMPILE_EXIT()                                                         \
 	COMPILE(EXIT)                                                          \
 	UNREACHABLE()
+#define COMPILE_LIT(lit) COMPILE(LIT) (void *) lit,
+#define COMPILE_LITSTRING(s) COMPILE_LIT(&(s)) COMPILE_LIT(sizeof(s)-1)
+#define COMPILE_TICK(word) COMPILE(TICK) COMPILE(word)
 
 /* Shorter versions of BUILTIN_FLAGS() that can be used to reduce boilerplate */
 #define BUILTIN(label, wname) BUILTIN_FLAGS(label, wname, 0)
@@ -145,6 +148,7 @@ void rf_forth_exec(struct forth_task *ctx)
 	/* Named variables */
 	uintptr_t var_STATE = 0;
 	char *var_HERE = (char *) ctx->here;
+	static struct header *const_BUILTIN_WORDS; /* const in Forth... but not const in C */
 	/* var_LATEST */
 	cell_t *var_S0 = dsp;
 	cell_t *var_R0 = (void *) rsp;
@@ -164,9 +168,15 @@ DOCOL:
 #include "words-basic.h"
 #include "words-stdc.h"
 
+#ifdef HAVE_CODEGEN_WORDS
+#include "words-codegen.h"
+#endif
+
 start:
-	if (!var_LATEST)
+	if (!var_LATEST) {
 		var_LATEST = PREVIOUS;
+		const_BUILTIN_WORDS = PREVIOUS;
+	}
 
 	if (!ip) {
 		/* Exit Forth if we run out of words */

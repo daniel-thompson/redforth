@@ -9,14 +9,33 @@ endif
 
 all : redforth
 
-OBJS = libred.o main.o vm-gnuc.o
-$(OBJS) : $(wildcard *.h)
+SRCS = libred.c main.c vm-gnuc.c
+CROSS_OBJS = $(patsubst %.c,build-cross/%.o,$(SRCS))
 
-redforth : $(OBJS)
-	$(CC) $(CFLAGS) -o $@ $(OBJS)
+crossforth : build-cross $(CROSS_OBJS)
+	$(CC) $(CFLAGS) -o $@ $(CROSS_OBJS)
+
+build-cross/%.o : %.c
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+OBJS = $(patsubst %.c,build/%.o,$(SRCS))
+
+redforth : build $(OBJS)
+	$(CROSS_COMPILE)$(CC) $(CFLAGS) -o $@ $(OBJS)
+
+build/%.o : %.c
+	$(CROSS_COMPILE)$(CC) $(CFLAGS) -DHAVE_CODEGEN_WORDS -c -o $@ $<
+
+words-codegen.h : crossforth
+	echo '/*' > words-codegen.h
+	cat core.fs tools.fs codegen.fs | ./crossforth >> words-codegen.h
+
+build build-cross :
+	mkdir $@
 
 clean :
-	$(RM) redforth debug.fs filetest.txt $(OBJS)
+	$(RM) -r build-cross/ build/
+	$(RM) redforth crossforth words-codegen.h debug.fs filetest.txt
 
 eyeball : redforth
 	cat core.fs tools.fs eyeball.fs | ./redforth
@@ -30,3 +49,6 @@ check : redforth
 debug : redforth
 	cat core.fs tools.fs selftest.fs > debug.fs
 	gdb redforth -ex "break rf_forth_exec" -ex "run < debug.fs"
+
+$(CROSS_OBJS) $(OBJS) : Makefile $(wildcard *.h)
+build/vm-gnuc.o : words-codegen.h

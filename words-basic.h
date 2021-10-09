@@ -176,16 +176,16 @@ NATIVE(GT, ">") /* ( a b -- b>a) */
 	dsp[0].n = dsp[0].n > tmp.n;
 	NEXT();
 
-NATIVE(LE, "<=") /* ( a b -- b<=a) */
+NATIVE(LTEQU, "<=") /* ( a b -- b<=a) */
 	tmp = POP();
 	dsp[0].n = dsp[0].n <= tmp.n;
 	NEXT();
 #undef  LINK
-#define LINK LE
+#define LINK LTEQU
 
-NATIVE(GE, ">=") /* ( a b -- b>=a) */
+NATIVE(GTEQU, ">=") /* ( a b -- b>=a) */
 #undef  LINK
-#define LINK GE
+#define LINK GTEQU
 	tmp = POP();
 	dsp[0].n = dsp[0].n >= tmp.n;
 	NEXT();
@@ -196,9 +196,9 @@ NATIVE(ZEQU, "0=") /* ( a -- a==0 ) */
 	dsp[0].n = dsp[0].n == 0;
 	NEXT();
 
-NATIVE(ZNE, "0<>") /* ( a -- a!=0 ) */
+NATIVE(ZNEQU, "0<>") /* ( a -- a!=0 ) */
 #undef  LINK
-#define LINK ZNE
+#define LINK ZNEQU
 	dsp[0].n = dsp[0].n != 0;
 	NEXT();
 
@@ -312,16 +312,16 @@ NATIVE(SUBSTORE, "-!") /* ( u a-addr -- ) */
  * Byte-oriented operations only work on architectures which permit them (i386
  * is one of those).
  */
-NATIVE(STOREBYTE, "C!")
+NATIVE(CSTORE, "C!")
 #undef  LINK
-#define LINK STOREBYTE
+#define LINK CSTORE
 	tmp = POP();
 	*tmp.cp = POP().u;
 	NEXT();
 
-NATIVE(FETCHBYTE, "C@")
+NATIVE(CFETCH, "C@")
 #undef  LINK
-#define LINK FETCHBYTE
+#define LINK CFETCH
 	tmp = POP();
 	PUSH((cell_t) { .u = *tmp.cp });
 	NEXT();
@@ -386,6 +386,12 @@ CONSTANT("F_HIDDEN", C_F_HIDDEN, F_HIDDEN)
 CONSTANT("F_LENMASK", C_F_LENMASK, F_LENMASK)
 #undef  LINK
 #define LINK C_F_LENMASK
+
+NATIVE(BUILTIN_WORDS, "BUILTIN-WORDS")
+#undef  LINK
+#define LINK BUILTIN_WORDS
+	PUSH((cell_t) { .p = const_BUILTIN_WORDS });
+	NEXT();
 
 /*
  * RETURN STACK  ------------------------------------------------------------
@@ -582,34 +588,6 @@ QBUILTIN(HIDE)
 	COMPILE(HIDDEN)
 	COMPILE_EXIT()
 
-BUILTIN(COLON, ":")
-#undef  LINK
-#define LINK COLON
-	COMPILE(WORD)		// Get the name of the new word
-	COMPILE(CREATE)		// CREATE the dictionary entry / header
-	COMPILE_LIT(&&DOCOL)	// Load DOCOL (the codeword)
-	COMPILE(COMMA)		// Append the codeword
-	COMPILE(LATEST)
-	COMPILE(FETCH)
-	COMPILE(HIDDEN)		// Make the new word hidden
-	COMPILE(RBRAC)		// Go into compile mode
-	COMPILE_EXIT()		// Return from the function
-
-BUILTIN_FLAGS(SEMICOLON, ";", F_IMMED)
-#undef  LINK
-#define LINK SEMICOLON
-	COMPILE_LIT(&word_EXIT.cf.codeword)
-	COMPILE(COMMA)		// Append EXIT (so the word will return)
-	COMPILE(LATEST)
-	COMPILE(FETCH)
-	COMPILE(HIDDEN)		// Unhide the word
-	COMPILE(LBRAC)		// Go back to IMMEDIATE mode
-	COMPILE_EXIT()
-
-/*
- * EXTENDING THE COMPILER  --------------------------------------------------
- */
-
 NATIVE_FLAGS(IMMEDIATE, "IMMEDIATE", F_IMMED)
 #undef  LINK
 #define LINK IMMEDIATE
@@ -627,6 +605,31 @@ NATIVE(TICK, "'") /* ( -- codeword ) Skip the next codeword, instead push it to 
 	 */
 	PUSH((cell_t) { .p = (*ip++) });
 	NEXT();
+
+BUILTIN(COLON, ":")
+#undef  LINK
+#define LINK COLON
+	COMPILE(WORD)		// Get the name of the new word
+	COMPILE(CREATE)		// CREATE the dictionary entry / header
+	COMPILE_LIT(&&DOCOL)	// Load DOCOL (the codeword)
+	COMPILE(COMMA)		// Append the codeword
+	COMPILE(LATEST)
+	COMPILE(FETCH)
+	COMPILE(HIDDEN)		// Make the new word hidden
+	COMPILE(RBRAC)		// Go into compile mode
+	COMPILE_EXIT()		// Return from the function
+
+BUILTIN_FLAGS(SEMICOLON, ";", F_IMMED)
+#undef  LINK
+#define LINK SEMICOLON
+	COMPILE_TICK(EXIT)
+	COMPILE(COMMA)		// Append EXIT (so the word will return)
+	COMPILE(LATEST)
+	COMPILE(FETCH)
+	COMPILE(HIDDEN)		// Unhide the word
+	COMPILE(LBRAC)		// Go back to IMMEDIATE mode
+	COMPILE_EXIT()
+
 
 /*
  * BRANCHING  ---------------------------------------------------------------
@@ -728,7 +731,7 @@ QBUILTIN(QUIT)
 	COMPILE(R0)
 	COMPILE(RSPSTORE)			// clear the return stack
 	COMPILE(INTERPRET)			// interpret the next word...
-	COMPILE_BRANCH(-2 * sizeof(uintptr_t))	// ... forever
+	COMPILE_BRANCH(-2)			// ... forever
 	UNREACHABLE()
 
 /*
@@ -751,9 +754,9 @@ QNATIVE(EXECUTE)
 	// HACK: ensure we close the safety brace
 	NEXT();
 
-QNATIVE(DOT) /* ( num -- ) */
+QNATIVE(RAWDOT) /* ( num -- ) */
 #undef  LINK
-#define LINK DOT
+#define LINK RAWDOT
 	printf("%" PRIdPTR " ", POP().u);
 	fflush(stdout);
 	NEXT();

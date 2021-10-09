@@ -2,3 +2,5 @@ redforth
 attic/
 .*.swp
 *.o
+words-codegen.h
+crossforth

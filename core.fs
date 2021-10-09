@@ -300,7 +300,7 @@
 )
 
 ( This is the underlying recursive definition of U. )
-: U.		( u -- )
+: RAWUDOT		( u -- )
 	BASE @ /MOD	( width rem quot )
 	?DUP IF			( if quotient <> 0 then )
 		RECURSE		( print the quotient )
@@ -329,17 +329,19 @@
   It does not alter the stack making it very useful for debugging.
 )
 : .S		( -- )
-	[CHAR] < EMIT DEPTH 1 CELLS / U. '>' EMIT SPACE
+	[CHAR] < EMIT DEPTH 1 CELLS / RAWUDOT '>' EMIT SPACE
 	S0 @
 	BEGIN
 		DUP DSP@ CELL+ CELL+ >
 	WHILE
 		CELL-
-		DUP @ U.
+		DUP @ RAWUDOT
 		SPACE
 	REPEAT
 	DROP
 ;
+
+: ~~ .S CR ;
 
 ( This word returns the width (in characters) of an unsigned number in the current base )
 : UWIDTH	( u -- width )
@@ -361,8 +363,8 @@
 	  Otherwise the number on the stack is the number of spaces to print.  But SPACES won't print
 	  a negative number of spaces anyway, so it's now safe to call SPACES ... )
 	SPACES
-	( ... and then call the underlying implementation of U. )
-	U.
+	( ... and then call the underlying implementation of RAWUDOT )
+	RAWUDOT
 ;
 
 (
@@ -395,14 +397,14 @@
 		'-' EMIT
 	THEN
 
-	U.
+	RAWUDOT
 ;
 
 ( Finally we can define word . in terms of .R, with a trailing space. )
 : . 0 .R SPACE ;
 
 ( The real U., note the trailing space. )
-: U. U. SPACE ;
+: U. RAWUDOT SPACE ;
 
 ( ? fetches the integer at an address and prints it. )
 : ? ( addr -- ) @ . ;
@@ -1178,7 +1180,7 @@
 		CELL-
 	REPEAT
 	CFA>
-	;
+;
 
 (
 	EXECUTION TOKENS ----------------------------------------------------------------------
@@ -1478,8 +1480,6 @@
 
 (
 	ENVIRON returns the address of the first environment string.  The list of strings ends
-	with a NULL pointer.
-
 	For example to print the first string in the environment you could do:
 		ENVIRON @ DUP STRLEN TYPE
 )

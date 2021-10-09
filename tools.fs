@@ -153,6 +153,12 @@
 ;
 
 : ?CFA		( x -- x | 0 )
+	( Due to the way (?CFA) indicates success/failure (via a conditional
+	  0 on the stack) then we have to special case zero before we start
+	)
+	DUP 0= IF
+		EXIT
+	THEN
 	' (?CFA) GET-CURRENT TRAVERSE-WORDLIST
 	DUP 0= IF
 		DROP
@@ -165,20 +171,104 @@
 
 ( MANGLE changes a Forth word name in to a C-compatible symbol name )
 : MANGLE	( c-addr1 u1 -- c-addr2 u2 )
+	2DUP S" '" COMPARE 0= IF 2DROP S" TICK" THEN
+	2DUP S" 1+" COMPARE 0= IF 2DROP S" ONEINCR" THEN
+	2DUP S" 1-" COMPARE 0= IF 2DROP S" ONEDECR" THEN
+	2DUP S" CELL+" COMPARE 0= IF 2DROP S" CELLINCR" THEN
+	2DUP S" CELL-" COMPARE 0= IF 2DROP S" CELLDECR" THEN
+	2DUP S" >R" COMPARE 0= IF 2DROP S" TOR" THEN
+	2DUP S" R>" COMPARE 0= IF 2DROP S" FROMR" THEN
+	2DUP S" >CFA" COMPARE 0= IF 2DROP S" TCFA" THEN
+	2DUP S" >DFA" COMPARE 0= IF 2DROP S" TDFA" THEN
+	2DUP S" -" COMPARE 0= IF 2DROP S" SUB" THEN
+	2DUP S" -ROT" COMPARE 0= IF 2DROP S" NROT" THEN
+	2DUP S" <>" COMPARE 0= IF 2DROP S" NEQU" THEN
+	2DUP S" 0<>" COMPARE 0= IF 2DROP S" ZNEQU" THEN
+	2DUP S" DOCOL" COMPARE 0= IF 2DROP S" C_DOCOL" THEN
+	2DUP S" F_LENMASK" COMPARE 0= IF 2DROP S" C_F_LENMASK" THEN
+	2DUP S" F_HIDDEN" COMPARE 0= IF 2DROP S" C_F_HIDDEN" THEN
+	2DUP S" F_IMMED" COMPARE 0= IF 2DROP S" C_F_IMMED" THEN
+
+	HERE @ 64 + 0
+
+	3 PICK C@
+	CASE
+	[CHAR] 0 OF S" Z" STRCAT ENDOF
+	[CHAR] 1 OF S" ONE" STRCAT ENDOF
+	[CHAR] 2 OF S" TWO" STRCAT ENDOF
+	( default )
+		DROP
+		2SWAP 1+ SWAP 1- SWAP 2SWAP	( pre-undo next character )
+		0
+	ENDCASE
+	2SWAP 1- SWAP 1+ SWAP 2SWAP	( next character )
+
+	BEGIN
+		2 PICK 0>
+	WHILE
+		3 PICK C@
+		CASE
+		[CHAR] ! OF S" STORE"     STRCAT ENDOF
+		[CHAR] " OF S" DQ"        STRCAT ENDOF
+		[CHAR] ' OF S" QT"        STRCAT ENDOF
+		[CHAR] ( OF S" LPAREN"    STRCAT ENDOF
+		[CHAR] ) OF S" RPAREN"    STRCAT ENDOF
+		[CHAR] * OF S" MUL"       STRCAT ENDOF
+		[CHAR] + OF S" ADD"       STRCAT ENDOF
+		[CHAR] , OF S" COMMA"     STRCAT ENDOF
+		[CHAR] - OF S" _"         STRCAT ENDOF
+		[CHAR] . OF S" DOT"       STRCAT ENDOF
+		[CHAR] / OF S" DIV"       STRCAT ENDOF
+		92 OF S" BS"        STRCAT ENDOF
+		( TODO: This is only to handle leading 2 characters... better done in a leading if condition )
+		[CHAR] : OF S" COLON"     STRCAT ENDOF
+		[CHAR] ; OF S" SEMICOLON" STRCAT ENDOF
+		[CHAR] < OF S" LT"        STRCAT ENDOF
+		[CHAR] = OF S" EQU"       STRCAT ENDOF
+		[CHAR] > OF S" GT"        STRCAT ENDOF
+		[CHAR] ? OF S" Q"         STRCAT ENDOF
+		[CHAR] @ OF S" FETCH"     STRCAT ENDOF
+		[CHAR] [ OF S" LBRAC"     STRCAT ENDOF
+		[CHAR] ] OF S" RBRAC"     STRCAT ENDOF
+		[CHAR] ~ OF S" TILDE"     STRCAT ENDOF
+		( default )
+			DUP 3 PICK 3 PICK + C!
+			SWAP 1+ SWAP
+		ENDCASE
+
+		2SWAP 1- SWAP 1+ SWAP 2SWAP	( next character )
+	REPEAT
+
+	( ... c-addr1+u1 0 c-addr2 u2 )
+	2SWAP 2DROP
+;
+
+( STRQUOTE changes a Forth word name in to a C-compatible string )
+: STRQUOTE	( c-addr1 u1 -- c-addr2 u2 )
 	HERE @ 64 + 0
 	BEGIN
 		2 PICK 0>
 	WHILE
 		3 PICK C@
 		CASE
-		( TODO: This is only to handle leading 2 characters... better done in a leading if condition )
-		[CHAR] 2 OF S" TWO"        STRCAT ENDOF
-		[CHAR] , OF S" COMMA"     STRCAT ENDOF
-		[CHAR] ; OF S" SEMICOLON" STRCAT ENDOF
-		[CHAR] @ OF S" FETCH"     STRCAT ENDOF
-		[CHAR] ! OF S" STORE"     STRCAT ENDOF
-		[CHAR] [ OF S" LBRAC"     STRCAT ENDOF
-		[CHAR] ] OF S" RBRAC"     STRCAT ENDOF
+		0 OF
+			2DUP +
+			92 OVER C!
+			[CHAR] 0 SWAP 1+ C!
+			2 +
+		ENDOF
+		[CHAR] " OF
+			2DUP +
+			92 OVER C!
+			[CHAR] " SWAP 1+ C!
+			2 +
+		ENDOF
+		92 OF
+			2DUP +
+			92 OVER C!
+			92 SWAP 1+ C!
+			2 +
+		ENDOF
 		( default )
 			DUP 3 PICK 3 PICK + C!
 			SWAP 1+ SWAP
@@ -206,21 +296,26 @@
 	' LIT OF		( is it LIT ? )
 		1 CELLS + DUP @		( get next word which is the
 		                          integer constant )
+		( Normally codeword literalss are compiled with a ' . In fact
+		  both LIT and ' are implemented the same in the VM! So just in
+		  case we'll do codeword detection on LIT as well!
+		)
 		DUP ?CFA IF
-			." 	COMPILE_TICK(" CFA> NAME>STRING TYPE ." )" CR	( and print it )
+			." 	COMPILE_TICK(" CFA> NAME>STRING MANGLE TYPE ." )" CR	( and print it )
 		ELSE DUP DOCOL = IF
 				." 	COMPILE_LIT(&&DOCOL)" CR
 				DROP
 		ELSE
-			." 	COMPILE_LIT(" 0 .R ." )" CR	( and print it )
+			." 	COMPILE_LIT(" ( 0 .R ) . ." )" CR	( and print it )
 		THEN THEN
 	ENDOF
 	' LITSTRING OF		( is it LITSTRING ? )
-		[ CHAR S ] LITERAL EMIT '"' EMIT SPACE ( print S"<space> )
+
+		." 	COMPILE_LITSTRING(" [CHAR] " EMIT
 		1 CELLS + DUP @		( get the length word )
-		SWAP 1 CELLS + SWAP		( end start+4 length )
-		2DUP TYPE		( print the string )
-		'"' EMIT SPACE		( finish the string with a
+		SWAP 1 CELLS + SWAP	( end start+4 length )
+		2DUP STRQUOTE TYPE	( print the string )
+		[CHAR] " EMIT ." )" CR	( finish the string with a
 		                          final quote )
 		+ ALIGNED		( end start+4+len, aligned )
 		1 CELLS -		( because we're about to add 4 below )
@@ -238,10 +333,8 @@
 		0 .R  ." )" CR
 	ENDOF
 	' ' OF			( is it ' (TICK) ? )
-		[ CHAR ' ] LITERAL EMIT SPACE
 		1 CELLS + DUP @		( get the next codeword )
-		CFA>			( and force it to be printed as a dictionary entry )
-		ID. SPACE
+		." 	COMPILE_TICK(" CFA> NAME>STRING MANGLE TYPE ." )" CR	( and print it )
 	ENDOF
 	' EXIT OF		( is it EXIT? )
 		( We expect the last word to be EXIT, and if it is then
@@ -283,20 +376,42 @@
 	( begin the definition with the BUILTIN_FLAGS(C_NAME, "WORDNAME", <flags>) macro )
 	." BUILTIN_FLAGS("
 	OVER NAME>STRING MANGLE TYPE
-	." , " [CHAR] " EMIT OVER NAME>STRING TYPE [CHAR] " EMIT
+	." , " [CHAR] " EMIT OVER NAME>STRING STRQUOTE TYPE [CHAR] " EMIT
 	." , 0"
 	OVER ?IMMEDIATE IF ."  | F_IMMED" THEN
 	OVER ?HIDDEN    IF ."  | F_HIDDEN" THEN
 	." )" CR
 
 	." #undef  LINK" CR
-	." #define " OVER NAME>STRING MANGLE TYPE CR
+	." #define LINK " OVER NAME>STRING MANGLE TYPE CR
 
 	' (>ROM) -ROT
 	ITERATE-CODE
 
 	( finalize and we are done )
 	." 	COMPILE_EXIT()" CR CR
+;
+
+: (LATEST>ROM)	( nt -- flag )
+	DUP
+	BUILTIN-WORDS = IF
+		DROP
+		FALSE
+	ELSE
+		TRUE
+	THEN
+;
+
+( LATEST>ROM walks the word list encoding anything that is not builtin )
+: LATEST>ROM
+	0
+	' (LATEST>ROM) GET-CURRENT TRAVERSE-WORDLIST
+	BEGIN
+		DUP 0<>
+	WHILE
+		NAME>STRING STRING>NAME >ROM
+	REPEAT
+	DROP
 ;
 
 ( (SEE) is the inner loop for SEE and it's roll is to decompiles the

@@ -18,8 +18,7 @@
 ( ASSERT verifis that the provided condition, n, is TRUE )
 : ASSERT ( n -- )
 	0= IF
-		."  FAILED
-"
+		."  FAILED" CR
 		." <" DEPTH 1 CELLS / . ." >  " .S CR EMIT
 		ABORT
 	THEN
@@ -86,6 +85,18 @@ FORGET TMPWORD
 ( Test STRING>NAME )
 S" WORDS" STRING>NAME DROP NAME>STRING TYPE CR
 ." WORDS" CR
+
+S" ;" MANGLE TYPE CR
+." SEMICOLON" CR
+
+S" HELLO" MANGLE TYPE CR
+." HELLO" CR
+
+\ : ROM WORD STRING>NAME >ROM ;
+\ ROM :
+\ ROM ;
+\ ROM :<>
+\ FORGET ROM
 
 ( Make sure nothing we did in this test leaked anything on the data stack )
 DEPTH 0= ASSERT
