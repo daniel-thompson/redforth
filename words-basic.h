@@ -670,7 +670,7 @@ QNATIVE(TYPE)
 #undef  LINK
 #define LINK TYPE
 	uintptr_t len = POP().u;
-	fwrite(POP().p, 1, len, stdout);
+	do_TYPE(POP().p, len);
 	NEXT();
 
 /*
