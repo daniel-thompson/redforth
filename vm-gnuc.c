@@ -169,7 +169,8 @@ DOCOL:
 #include "words-stdc.h"
 
 #ifdef HAVE_CODEGEN_WORDS
-#include "words-codegen.h"
+#include "words-core.h"
+#include "words-tools.h"
 #endif
 
 start:
