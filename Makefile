@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: LGPL-3.0-or-later
+
 CC = gcc
 CFLAGS = -Wall -Werror -g
 
@@ -27,8 +29,7 @@ build/%.o : %.c
 	$(CROSS_COMPILE)$(CC) $(CFLAGS) -DHAVE_CODEGEN_WORDS -c -o $@ $<
 
 words-codegen.h : crossforth
-	echo '/*' > words-codegen.h
-	cat core.fs tools.fs codegen.fs | ./crossforth >> words-codegen.h
+	./crossforth < codegen.fs
 
 build build-cross :
 	mkdir $@
@@ -50,5 +51,5 @@ debug : redforth
 	cat core.fs tools.fs selftest.fs > debug.fs
 	gdb redforth -ex "break rf_forth_exec" -ex "run < debug.fs"
 
-$(CROSS_OBJS) $(OBJS) : Makefile $(wildcard *.h)
+$(CROSS_OBJS) $(OBJS) : Makefile $(subst words-codegen.h,,$(wildcard *.h))
 build/vm-gnuc.o : words-codegen.h

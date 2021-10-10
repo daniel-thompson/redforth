@@ -44,8 +44,11 @@ uint8_t *to_flags(struct header *l);
 struct header *do_FIND(const char *s, size_t n);
 char do_KEY(void);
 void do_EMIT(char ch);
+void do_TYPE(char *s, size_t len);
 uintptr_t do_NUMBER(char *cp, uintptr_t len, int base, char **endptr);
 char *do_WORD(void);
+void do_INCLUDE(char *fname);
+void do_EXUDE(char *fname);
 
 /*
  * FORTH EXECUTION  ---------------------------------------------------------

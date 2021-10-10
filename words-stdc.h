@@ -31,4 +31,16 @@ CONSTANT("FN-free", FN_free, (uintptr_t) &free)
 #undef  LINK
 #define LINK FN_free
 
+QNATIVE(INCLUDE)
+#undef  LINK
+#define LINK INCLUDE
+	do_INCLUDE(do_WORD());
+	NEXT();
+
+QNATIVE(EXUDE)
+#undef  LINK
+#define LINK EXUDE
+	do_EXUDE(do_WORD());
+	NEXT();
+
 #endif /* RF_WORDS_STDC_H_ */

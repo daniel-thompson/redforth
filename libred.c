@@ -14,6 +14,9 @@
 struct header *var_LATEST;
 uintptr_t var_LINENO = 0;
 
+static FILE *rf_in = NULL;
+static FILE *rf_out = NULL;
+
 struct codefield *to_CFA(struct header *l)
 {
 	char *name = (char *) (l + 1);
@@ -48,17 +51,36 @@ struct header *do_FIND(const char *s, size_t n)
 
 char do_KEY(void)
 {
-	int ch = getchar();
-	if (ch == EOF)
-		exit(0);
+	if (!rf_in)
+		rf_in = stdin;
+
+	int ch = fgetc(rf_in);
+	if (ch == EOF) {
+		if (rf_in == stdin) {
+			exit(0);
+		} else {
+			rf_in = stdin;
+			return do_KEY();
+		}
+	}
 
 	return ch;
 }
 
 void do_EMIT(char ch)
 {
-	putchar(ch);
-	fflush(stdout);
+	if (!rf_out)
+		rf_out = stdout;
+	fputc(ch, rf_out);
+	fflush(rf_out);
+}
+
+void do_TYPE(char *s, size_t len)
+{
+	if (!rf_out)
+		rf_out = stdout;
+	fwrite(s, 1, len, rf_out);
+	fflush(rf_out);
 }
 
 uintptr_t do_NUMBER(char *cp, uintptr_t len, int base, char **endptr)
@@ -105,18 +127,15 @@ char *do_WORD(void)
 	int ch;
 
 	do {
-		ch = getchar();
+		ch = do_KEY();
 		if (ch == '\n')
 			var_LINENO++;
 	} while (isspace(ch));
 
-	if (ch == EOF)
-		exit(0);
-
 	/* Handle comments */
 	if (ch == '\\') {
 		while (ch != '\n' && ch != EOF)
-			ch = getchar();
+			ch = do_KEY();
 		var_LINENO++;
 		return do_WORD();
 	}
@@ -124,7 +143,7 @@ char *do_WORD(void)
 	/* Read the word */
 	*p++ = ch;
 	do {
-		ch = getchar();
+		ch = do_KEY();
 		*p++ = ch;
 	} while (!isspace(ch) && ch != EOF);
 
@@ -136,4 +155,20 @@ char *do_WORD(void)
 		var_LINENO++;
 
 	return buf;
+}
+
+void do_INCLUDE(char *fname)
+{
+	if (rf_in && rf_in != stdin)
+		fclose(rf_in);
+
+	rf_in = fopen(fname, "r");
+}
+
+void do_EXUDE(char *fname)
+{
+	if (rf_out && rf_out != stdout)
+		fclose(rf_out);
+
+	rf_out = fopen(fname, "w");
 }
