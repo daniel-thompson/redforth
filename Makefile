@@ -13,6 +13,8 @@ all : redforth
 
 SRCS = libred.c main.c vm-gnuc.c
 CROSS_OBJS = $(patsubst %.c,build-cross/%.o,$(SRCS))
+HDRS = libred.h words-basic.h words-stdc.h
+CODEGEN_HDRS = words-core.h words-tools.h
 
 crossforth : build-cross $(CROSS_OBJS)
 	$(CC) $(CFLAGS) -o $@ $(CROSS_OBJS)
@@ -28,7 +30,7 @@ redforth : build $(OBJS)
 build/%.o : %.c
 	$(CROSS_COMPILE)$(CC) $(CFLAGS) -DHAVE_CODEGEN_WORDS -c -o $@ $<
 
-words-codegen.h : crossforth
+$(CODEGEN_HDRS) : crossforth
 	./crossforth < codegen.fs
 
 build build-cross :
@@ -57,5 +59,5 @@ debug : redforth
 	cat core.fs tools.fs selftest.fs > debug.fs
 	gdb redforth -ex "break rf_forth_exec" -ex "run < debug.fs"
 
-$(CROSS_OBJS) $(OBJS) : Makefile $(subst words-codegen.h,,$(wildcard *.h))
-build/vm-gnuc.o : words-codegen.h
+$(CROSS_OBJS) $(OBJS) : Makefile $(HDRS)
+build/vm-gnuc.o : $(CODEGEN_HDRS)

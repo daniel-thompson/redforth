@@ -434,6 +434,35 @@
 	DROP
 ;
 
+: (LIST>ROM) ( firstnt nt -- nt firstnt TRUE | FALSE )
+	2DUP = IF
+		2DROP
+		FALSE
+	ELSE
+		SWAP
+		TRUE
+	THEN
+;
+
+( LIST>ROM walks the word list endcoding from lastnt to firstnt )
+: LIST>ROM ( firstnt lastnt -- )
+	0 -ROT			( leave sentinel marker )
+
+	' (LIST>ROM) SWAP	( 0 firstnt xt lastnt )
+	TRAVERSE-WORDLIST	( 0 nt... )
+
+	BEGIN
+		DUP 0<>
+	WHILE
+		( look up the limit for decompiling )
+		NAME>STRING STRING>NAME
+
+		( codegen )
+		>ROM
+	REPEAT
+	DROP
+;
+
 ( (SEE) is the inner loop for SEE and it's roll is to decompiles the
   codeword.
 

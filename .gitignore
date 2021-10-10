@@ -4,3 +4,5 @@ attic/
 *.o
 words-codegen.h
 crossforth
+words-core.h
+words-tools.h
