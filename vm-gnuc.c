@@ -2,6 +2,7 @@
 
 #include <ctype.h>
 #include <inttypes.h>
+#include <stdarg.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -10,6 +11,29 @@
 #include <string.h>
 
 #include "libred.h"
+
+#define ENABLE_TRACE
+#ifdef ENABLE_TRACE
+static void vm_trace(const char *fmt, ...)
+{
+	va_list ap;
+
+	va_start(ap, fmt);
+	vfprintf(stderr, fmt, ap);
+	va_end(ap);
+}
+
+static void vm_trace_next(void ***ip)
+{
+	void **codeword = *ip;
+	struct header *hdr = from_codeword(codeword);
+	vm_trace("%08p: NEXT -> %08p (%s)\n", ip, codeword, (char *) (hdr+1));
+
+}
+#else
+#define vm_trace(...) ((void) 0)
+#define vm_trace_next(cfa) ((void) 0)
+#endif
 
 #define PUSH(p) do { dsp[-1] = (p); dsp--; } while(0)
 #define POP() (*dsp++)
@@ -62,6 +86,7 @@ label:                                                                         \
 
 #define RAW_NEXT()                                                             \
 		do {                                                           \
+			vm_trace_next(ip);                                     \
 			codeword = *ip++;                                      \
 			goto **codeword;                                       \
 		} while (0)

@@ -41,6 +41,8 @@ struct codefield {
 
 struct codefield *to_CFA(struct header *l);
 uint8_t *to_flags(struct header *l);
+struct header *from_CFA(struct codefield *cf);
+struct header *from_codeword(void **codeword);
 struct header *do_FIND(const char *s, size_t n);
 char do_KEY(void);
 void do_EMIT(char ch);

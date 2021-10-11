@@ -32,6 +32,23 @@ uint8_t *to_flags(struct header *l)
 	return cf - 1;
 }
 
+struct header *from_CFA(struct codefield *cf)
+{
+	uint8_t *p = (void *) cf;
+
+	p -= F_LEN(p[-1]);
+
+	return ((struct header *) p) - 1;
+}
+
+struct header *from_codeword(void **codeword)
+{
+	struct codefield *cf = containerof(codeword, struct codefield, codeword)
+;
+
+	return from_CFA(cf);
+}
+
 struct header *do_FIND(const char *s, size_t n)
 {
 	struct header *node = var_LATEST;
