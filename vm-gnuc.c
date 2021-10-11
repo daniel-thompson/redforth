@@ -165,12 +165,12 @@ DOCOL:
         ip = (void ***)(codeword + (sizeof(struct codefield) / sizeof(void *)));
         RAW_NEXT();
 
-#include "words-basic.h"
-#include "words-stdc.h"
+#include "native-words.h"
+#include "stdc-words.h"
 
 #ifdef HAVE_CODEGEN_WORDS
-#include "words-core.h"
-#include "words-tools.h"
+#include "core-words.h"
+#include "tools-words.h"
 #endif
 
 start:

@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 CC = gcc
-CFLAGS = -Wall -Werror -g
+CFLAGS = -Wall -Werror -g -Iwords
 
 ifdef NO_OPT
 CFLAGS += -O0
@@ -13,7 +13,7 @@ all : redforth
 
 SRCS = libred.c main.c vm-gnuc.c
 CROSS_OBJS = $(patsubst %.c,build-cross/%.o,$(SRCS))
-HDRS = libred.h words-basic.h words-stdc.h
+HDRS = libred.h words/native-words.h words/stdc-words.h
 CODEGEN_HDRS = words-core.h words-tools.h
 
 crossforth : build-cross $(CROSS_OBJS)
@@ -31,7 +31,7 @@ build/%.o : %.c
 	$(CROSS_COMPILE)$(CC) $(CFLAGS) -DHAVE_CODEGEN_WORDS -c -o $@ $<
 
 $(CODEGEN_HDRS) : crossforth
-	./crossforth < codegen.fs
+	(cd words/; ../crossforth < ../codegen.fs) 2> /dev/null
 
 build build-cross :
 	mkdir $@
@@ -41,12 +41,12 @@ clean :
 	$(RM) redforth crossforth words-codegen.h debug.fs filetest.txt
 
 eyeball : redforth
-	cat core.fs tools.fs eyeball.fs | ./redforth
+	cat eyeball.fs | ./redforth
 
 check : redforth
-	cat core.fs tools.fs eyeball.fs | ./redforth | uniq -u > eyeball.log
+	cat words/core-words.fs words/tools-words.fs eyeball.fs | ./redforth | uniq -u > eyeball.log
 	[ `cat eyeball.log | wc -l` -eq 2 ] || (cat eyeball.log; false)
-	cat core.fs tools.fs selftest.fs | ./redforth
+	cat selftest.fs | ./redforth
 	@$(RM) filetest.txt eyeball.log
 
 debug : redforth
