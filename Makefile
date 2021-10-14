@@ -14,9 +14,9 @@ all : redforth
 SRCS = libred.c main.c vm-gnuc.c
 CROSS_OBJS = $(patsubst %.c,build-cross/%.o,$(SRCS))
 HDRS = libred/libred.h words/native-words.h words/stdc-words.h
-CODEGEN_HDRS = words-core.h words-tools.h
+CODEGEN_HDRS = words/core-words.h words/tools-words.h
 
-crossforth : build-cross $(CROSS_OBJS)
+build-cross/crossforth : build-cross $(CROSS_OBJS)
 	$(CC) $(CFLAGS) -o $@ $(CROSS_OBJS)
 
 build-cross/%.o : %.c
@@ -31,8 +31,8 @@ build/%.o : %.c
 	$(CROSS_COMPILE)$(CC) $(CFLAGS) -DHAVE_CODEGEN_WORDS -c -o $@ $<
 
 $(CODEGEN_HDRS) : do_codegen
-do_codegen : crossforth
-	(cd words/; ../crossforth < ../codegen.fs)
+do_codegen : build-cross/crossforth
+	(cd words/; ../build-cross/crossforth < ../scripts/codegen.fs) > /dev/null
 .PHONY: do_codegen
 
 build build-cross :
@@ -40,28 +40,27 @@ build build-cross :
 
 clean :
 	$(RM) -r build-cross/ build/
-	$(RM) redforth crossforth words-codegen.h debug.fs filetest.txt
+	$(RM) redforth $(CODEGEN_HDRS) debug.fs filetest.txt
 
 eyeball : redforth
 	cat eyeball.fs | ./redforth
 
-cross-check : crossforth
-	cat words/core-words.fs words/tools-words.fs eyeball.fs | ./crossforth | uniq -u > eyeball.log
+cross-check : build-cross/crossforth
+	cat words/core-words.fs words/tools-words.fs scripts/eyeball.fs | ./build-cross/crossforth | uniq -u > eyeball.log
 	[ `cat eyeball.log | wc -l` -eq 2 ] || (cat eyeball.log; false)
-	cat words/core-words.fs words/tools-words.fs selftest.fs | ./crossforth
+	cat words/core-words.fs words/tools-words.fs scripts/selftest.fs | ./build-cross/crossforth
 	@$(RM) filetest.txt eyeball.log
 
 check : redforth
-	cat eyeball.fs | ./redforth | uniq -u > eyeball.log
+	cat scripts/eyeball.fs | ./redforth | uniq -u > eyeball.log
 	[ `cat eyeball.log | wc -l` -eq 1 ] || (cat eyeball.log; false)
-	cat selftest.fs | ./redforth
+	cat scripts/selftest.fs | ./redforth
 	@$(RM) filetest.txt eyeball.log
 
 debug : redforth
-	cat core.fs tools.fs selftest.fs > debug.fs
-	gdb redforth -ex "break rf_forth_exec" -ex "run < debug.fs"
+	gdb redforth -ex "break rf_forth_exec" -ex "run < scripts/selftest.fs"
 
 $(CROSS_OBJS) $(OBJS) : Makefile $(HDRS)
-build/vm-gnuc.o : $(CODEGEN_HDRS)
+build/vm-gnuc.o : do_codegen $(CODEGEN_HDRS)
 
-vpath %.c libred/
+vpath %.c libred/ ports/unix/
