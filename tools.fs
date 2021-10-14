@@ -6,6 +6,7 @@
   implemented in core.fs:
 
     BYE
+    [DEFINED]
     DUMP
     .S
     FORGET
@@ -16,7 +17,6 @@
 
     AHEAD
     ASSEMBLER
-    [DEFINED]
     [ELSE]
     [IF]
     [THEN]
