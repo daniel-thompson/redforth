@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 CC = gcc
-CFLAGS = -Wall -Werror -g -Iwords
+CFLAGS = -Wall -Werror -g -Ilibred -Iwords
 
 ifdef NO_OPT
 CFLAGS += -O0
@@ -13,7 +13,7 @@ all : redforth
 
 SRCS = libred.c main.c vm-gnuc.c
 CROSS_OBJS = $(patsubst %.c,build-cross/%.o,$(SRCS))
-HDRS = libred.h words/native-words.h words/stdc-words.h
+HDRS = libred/libred.h words/native-words.h words/stdc-words.h
 CODEGEN_HDRS = words-core.h words-tools.h
 
 crossforth : build-cross $(CROSS_OBJS)
@@ -63,3 +63,5 @@ debug : redforth
 
 $(CROSS_OBJS) $(OBJS) : Makefile $(HDRS)
 build/vm-gnuc.o : $(CODEGEN_HDRS)
+
+vpath %.c libred/
