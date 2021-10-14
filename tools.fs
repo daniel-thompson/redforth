@@ -310,15 +310,27 @@
 		THEN THEN
 	ENDOF
 	' LITSTRING OF		( is it LITSTRING ? )
+		( TODO: This won't work if the headers are generated on
+		        systems a different word size or of a different
+			endian-ness.
 
-		." 	COMPILE_LITSTRING(" [CHAR] " EMIT
+			To make the output portable we will need a new word,
+			perhaps VMLITSTRING? Combine this with some sneaky
+			code generation and we are home free...
+		)
+		." 	COMPILE(LITSTRING)" CR
 		1 CELLS + DUP @		( get the length word )
-		SWAP 1 CELLS + SWAP	( end start+4 length )
-		2DUP STRQUOTE TYPE	( print the string )
-		[CHAR] " EMIT ." )" CR	( finish the string with a
-		                          final quote )
-		+ ALIGNED		( end start+4+len, aligned )
-		1 CELLS -		( because we're about to add 4 below )
+		DUP
+		." 	(void *) " . ." ," CR
+		BEGIN
+			DUP 0>
+		WHILE
+			SWAP CELL+ DUP @
+			." 	(void *) " . ." ," CR
+			SWAP
+			1 CELLS -
+		REPEAT
+		DROP
 	ENDOF
 	' 0BRANCH OF		( is it 0BRANCH ? )
 		." 	COMPILE_0BRANCH("
