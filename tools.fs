@@ -152,7 +152,12 @@
 
 ;
 
-: ?CFA		( x -- x | 0 )
+( ?CFA tests whether x is a valid codefield address
+
+  It is primarily used by the decompiler in order to determine whether a
+  LITERAL needs to be replaced with a '
+)
+: ?CFA		( x -- x | FALSE )
 	( Due to the way (?CFA) indicates success/failure (via a conditional
 	  0 on the stack) then we have to special case zero before we start
 	)
