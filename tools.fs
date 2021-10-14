@@ -116,16 +116,19 @@
   words that require more than 1 cell.
 )
 : ITERATE-CODE ( xt nt limit -- )
-	SWAP
+	SWAP		( xt limit nt )
 	>DFA		( get the data address, ie. points after
 	                  DOCOL | end-of-word start-of-data )
 
 	BEGIN
 		2DUP >
 	WHILE
-		DUP @		( limit ip codeword )
-		3 PICK EXECUTE  ( limit ip )
+		SWAP >R		( xt ip )
+		SWAP DUP >R	( ip xt )
+		SWAP DUP @	( xt ip codeword )
+		ROT EXECUTE	( ip )
 
+		R> R> ROT	( xt limit ip )
 		1 CELLS +
 	REPEAT
 
