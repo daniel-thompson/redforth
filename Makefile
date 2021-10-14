@@ -38,12 +38,18 @@ clean :
 	$(RM) redforth crossforth words-codegen.h debug.fs filetest.txt
 
 eyeball : redforth
-	cat core.fs tools.fs eyeball.fs | ./redforth
+	cat eyeball.fs | ./redforth
+
+cross-check : crossforth
+	cat core.fs tools.fs eyeball.fs | ./crossforth | uniq -u > eyeball.log
+	-[ `cat eyeball.log | wc -l` -eq 2 ] || (cat eyeball.log; false)
+	cat core.fs tools.fs selftest.fs | ./crossforth
+	@$(RM) filetest.txt eyeball.log
 
 check : redforth
-	cat core.fs tools.fs eyeball.fs | ./redforth | uniq -u > eyeball.log
-	[ `cat eyeball.log | wc -l` -eq 2 ] || (cat eyeball.log; false)
-	cat core.fs tools.fs selftest.fs | ./redforth
+	cat eyeball.fs | ./redforth | uniq -u > eyeball.log
+	[ `cat eyeball.log | wc -l` -eq 1 ] || (cat eyeball.log; false)
+	cat selftest.fs | ./redforth
 	@$(RM) filetest.txt eyeball.log
 
 debug : redforth
