@@ -30,8 +30,10 @@ redforth : build $(OBJS)
 build/%.o : %.c
 	$(CROSS_COMPILE)$(CC) $(CFLAGS) -DHAVE_CODEGEN_WORDS -c -o $@ $<
 
-$(CODEGEN_HDRS) : crossforth
+$(CODEGEN_HDRS) : do_codegen
+do_codegen : crossforth
 	(cd words/; ../crossforth < ../codegen.fs)
+.PHONY: do_codegen
 
 build build-cross :
 	mkdir $@
