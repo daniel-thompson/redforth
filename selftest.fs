@@ -476,6 +476,68 @@ FORGET "LEFT
 
 OK
 
+
+( --------------------------------------------------------------------------- )
+." Programming tools tests "
+
+T{ GET-CURRENT -> LATEST @ }T
+
+: TOOLS1 [DEFINED] GET-CURRENT LITERAL ;
+T{ [DEFINED] GET-CURRENT -> TRUE }T
+T{ [DEFINED] TOOLS1 -> TRUE }T
+T{ TOOLS1 -> TRUE }T
+FORGET TOOLS1
+T{ [DEFINED] TOOLS1 -> FALSE }T
+
+: TOOLS2 ;
+T{ GET-CURRENT NAME>STRING S" TOOLS2" COMPARE 0= -> TRUE }T
+T{ GET-CURRENT @ NAME>STRING S" TOOLS2" COMPARE 0= -> FALSE }T
+FORGET TOOLS2
+
+( Two different ways to count the number of defined words... one of which uses
+  TRAVERSE-WORDLIST, which is what we are testing
+)
+: TOOLS3 ( x nt -- x+1 TRUE ) DROP 1+ TRUE ;
+: TOOLS4 ( -- x ) 0 ' TOOLS3 GET-CURRENT TRAVERSE-WORDLIST ;
+: TOOLS5 ( -- x ) 0 LATEST @ BEGIN DUP 0<> WHILE SWAP 1+ SWAP @ REPEAT DROP ;
+T{ TOOLS4 -> TOOLS5 }T
+FORGET TOOLS3
+
+( STRING>NAME is a vendor extension and has a rather odd interface that pushes
+  nt and limit to the stack.
+)
+T{ S" +" STRING>NAME DROP 0<> -> TRUE }T
+T{ S" +" 2DUP STRING>NAME DROP NAME>STRING COMPARE 0= -> TRUE }T
+
+: TOOLS6 ( count ip codeword -- count ip ) DROP SWAP 1+ SWAP ;
+: TOOLS7 ' TOOLS6 S" TOOLS6" STRING>NAME ITERATE-CODE ;
+: TOOLS8 ' TOOLS6 S" SEE" STRING>NAME ITERATE-CODE ;
+T{ 0 TOOLS7 -> 5 ( the four obvious words and EXIT ) }T
+T{ 0 TOOLS8 0<> -> TRUE ( this is a does it crash test ;- ) }T
+FORGET TOOLS6
+
+: TOOLS9 S" Fabulous" ;
+: TOOLS10 S" Absolutely " ;
+: TOOLS11 S" Absolutely Fabulous" ;
+T{ HERE @ 0 TOOLS9 STRCAT TOOLS9 COMPARE 0= -> TRUE }T
+T{ HERE @ 0 TOOLS10 STRCAT TOOLS9 STRCAT TOOLS11 COMPARE 0= -> TRUE }T
+FORGET TOOLS9
+
+T{ 0 ?CFA -> FALSE }T
+T{ HERE ?CFA -> FALSE }T
+T{ GET-CURRENT >CFA ?CFA -> GET-CURRENT >CFA }T
+( GET-CURRENT is implemented in Forth to the first value *after* its own CFA
+  should point to a CFA )
+T{ GET-CURRENT >CFA CELL+ @ ?CFA 0<> -> TRUE }T
+
+( MANGLE )
+: TOOLS12 S" TWODUP" S" 2DUP" ;
+T{ TOOLS12 MANGLE COMPARE 0= -> TRUE }T
+FORGET TOOLS12
+
+OK
+
+
 ( --------------------------------------------------------------------------- )
 ( Final test... let's make sure execution stops after we say BYE )
 ." Checking for stack leaks ..."
