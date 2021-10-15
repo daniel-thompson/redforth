@@ -317,28 +317,51 @@
 			." 	COMPILE_LIT(" ( 0 .R ) . ." )" CR	( and print it )
 		THEN THEN
 	ENDOF
-	' LITSTRING OF		( is it LITSTRING ? )
-		( TODO: This won't work if the headers are generated on
-		        systems a different word size or of a different
-			endian-ness.
-
-			To make the output portable we will need a new word,
-			perhaps VMLITSTRING? Combine this with some sneaky
-			code generation and we are home free...
-		)
-		." 	COMPILE(LITSTRING)" CR
+	' CLITSTRING OF		( is it LITSTRING ? )
+		." 	COMPILE_CLITSTRING(" [CHAR] " EMIT
 		1 CELLS + DUP @		( get the length word )
+		SWAP 1 CELLS + SWAP     ( end start+4 length )
+		2DUP SWAP @ SWAP STRQUOTE TYPE      ( print the string )
+		[CHAR] " EMIT ." )" CR  ( finish the string with a
+					  final quote )
+
+		( Now we must add padding to the generated C, which doesn't
+		  store the literal string within the dictionary, occupies
+		  the same number of cells as the Forth version.
+		)
 		DUP
-		." 	(void *) " . ." ," CR
 		BEGIN
-			DUP 0>
+			1 CELLS - DUP 0>
 		WHILE
-			SWAP CELL+ DUP @
-			." 	(void *) " . ." ," CR
-			SWAP
-			1 CELLS -
+			." 	(void *) 0," CR
 		REPEAT
 		DROP
+
+		+ ALIGNED               ( end start+4+len, aligned )
+		1 CELLS -               ( because we're about to add 4 below )
+	ENDOF
+	' LITSTRING OF		( is it LITSTRING ? )
+		." 	COMPILE_CLITSTRING(" [CHAR] " EMIT
+		1 CELLS + DUP @		( get the length word )
+		SWAP 1 CELLS + SWAP     ( end start+4 length )
+		2DUP STRQUOTE TYPE      ( print the string )
+		[CHAR] " EMIT ." )" CR  ( finish the string with a
+					  final quote )
+
+		( Now we must add padding to the generated C, which doesn't
+		  store the literal string within the dictionary, occupies
+		  the same number of cells as the Forth version.
+		)
+		DUP
+		BEGIN
+			1 CELLS - DUP 0>
+		WHILE
+			." 	(void *) 0," CR
+		REPEAT
+		DROP
+
+		+ ALIGNED               ( end start+4+len, aligned )
+		1 CELLS -               ( because we're about to add 4 below )
 	ENDOF
 	' 0BRANCH OF		( is it 0BRANCH ? )
 		." 	COMPILE_0BRANCH("
@@ -480,6 +503,16 @@
 		                          integer constant )
 		.			( and print it )
 	ENDOF
+	' CLITSTRING OF		( is it CLITSTRING ? )
+		[ CHAR S ] LITERAL EMIT '"' EMIT SPACE ( print S"<space> )
+		1 CELLS + DUP @		( get the length word )
+		SWAP 1 CELLS + SWAP	( end start+4 length )
+		2DUP SWAP @ SWAP TYPE	( print the string )
+		'"' EMIT SPACE		( finish the string with a
+		                          final quote )
+		+ ALIGNED		( end start+4+len, aligned )
+		1 CELLS -		( because we're about to add 4 below )
+	ENDOF
 	' LITSTRING OF		( is it LITSTRING ? )
 		[ CHAR S ] LITERAL EMIT '"' EMIT SPACE ( print S"<space> )
 		1 CELLS + DUP @		( get the length word )
@@ -574,3 +607,14 @@
 : WORDS ( -- )
 	' (WORDS) GET-CURRENT TRAVERSE-WORDLIST CR
 ;
+
+: S1 42 S" 1" 42 ;
+: S2 42 S" 12" 42 ;
+: S3 42 S" 123" 42 ;
+: S4 42 S" 1234" 42 ;
+: S5 42 S" 12345" 42 ;
+: S6 42 S" 123456" 42 ;
+: S7 42 S" 1234567" 42 ;
+: S8 42 S" 12345678" 42 ;
+: S9 42 S" 123456789" 42 ;
+: S10 42 S" 1234567890" 42 ;

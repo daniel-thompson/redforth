@@ -102,11 +102,13 @@ label:                                                                         \
 #define COMPILE(label) ((void **) &word_##label.cf.codeword),
 #define COMPILE_0BRANCH(offset) COMPILE(ZBRANCH) (void *) ((offset) * sizeof(cell_t)),
 #define COMPILE_BRANCH(offset)  COMPILE(BRANCH)  (void *) ((offset) * sizeof(cell_t)),
+#define COMPILE_CLITSTRING(s) COMPILE(CLITSTRING)                              \
+	                      (void *) (sizeof(s)-1),                          \
+			      (void *) &(s),
 #define COMPILE_EXIT()                                                         \
 	COMPILE(EXIT)                                                          \
 	UNREACHABLE()
 #define COMPILE_LIT(lit) COMPILE(LIT) (void *) lit,
-#define COMPILE_LITSTRING(s) COMPILE_LIT(&(s)) COMPILE_LIT(sizeof(s)-1)
 #define COMPILE_TICK(word) COMPILE(TICK) COMPILE(word)
 
 /* Shorter versions of BUILTIN_FLAGS() that can be used to reduce boilerplate */

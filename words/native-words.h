@@ -666,6 +666,24 @@ QNATIVE(LITSTRING)
 	ip += (tmp.u + sizeof(*ip) - 1) / sizeof(*ip); // skip past the string
 	NEXT();
 
+QNATIVE(CLITSTRING) /* ( -- c-addr u ) Load a C string literal */
+#undef	LINK
+#define LINK CLITSTRING
+	tmp.p  = *ip++;				// get the length of string
+	PUSH((cell_t) { .p = *ip++ });		// push start address
+	PUSH(tmp);				// push length
+
+	/* Finally we must skip forward to the next instruction. When >ROM
+	 * writes out string literals it pads the CLITSTRING instruction to
+	 * ensure branches still point to the right place (and in a manner
+	 * such that CLITSTRING can cope regardless of the cell size of
+	 * the Forth running >ROM.
+	 */
+	ip += (tmp.u - 1) / sizeof(cell_t);	// skip "most" of the string
+	while (NULL == *ip)			// now skip NULL instructions
+		ip++;
+	NEXT();
+
 QNATIVE(TYPE)
 #undef  LINK
 #define LINK TYPE
