@@ -35,8 +35,8 @@ DEPTH 0= ASSERT
 
   Currently this test is disabled because U. doesn't work for -ve numbers.
 )
-\10 U. -1 U. 0 U. CR
-\." 10 / 0 " CR
+\ 10 U. -1 U. 0 U. CR
+\ ." 10 / 0 " CR
 
 ( .S )
 
