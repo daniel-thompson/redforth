@@ -784,6 +784,15 @@ QNATIVE(PAUSE) /* ( ) exit the VM */
 	return;
 	NEXT();
 
+BUILTIN_FLAGS(COMMENT, "\\", F_IMMED)
+#undef  LINK
+#define LINK COMMENT
+	COMPILE(KEY)
+	COMPILE_LIT('\n')
+	COMPILE(EQU)
+	COMPILE_0BRANCH(-5)
+	COMPILE_EXIT()
+
 /*
  * C ABI GLUE  --------------------------------------------------------------
  */

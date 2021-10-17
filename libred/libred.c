@@ -132,14 +132,6 @@ char *do_WORD(void)
 			var_LINENO++;
 	} while (isspace(ch));
 
-	/* Handle comments */
-	if (ch == '\\') {
-		while (ch != '\n' && ch != EOF)
-			ch = do_KEY();
-		var_LINENO++;
-		return do_WORD();
-	}
-
 	/* Read the word */
 	*p++ = ch;
 	do {
