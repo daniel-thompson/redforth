@@ -7,9 +7,13 @@
 
     BYE
     [DEFINED]
+    [ELSE]
+    [IF]
+    [THEN]
     DUMP
     .S
     FORGET
+    NAME>STRING
     SEE
     WORDS
 
@@ -17,9 +21,6 @@
 
     AHEAD
     ASSEMBLER
-    [ELSE]
-    [IF]
-    [THEN]
     [UNDEFINED]
     CODE
     CS-PICK
@@ -27,7 +28,6 @@
     EDITOR
     NAME>COMPILE
     NAME>INTERPRET
-    NAME>STRING
     NR>
     N>R
     SYNONYM
@@ -53,6 +53,34 @@
 )
 : [DEFINED] IMMEDIATE	( -- flag )
 	WORD FIND 0<>
+;
+
+( [ELSE] is an immediate variant of ELSE. )
+: [ELSE] IMMEDIATE
+	BEGIN
+		WORD
+		S" [THEN]" COMPARE 0=
+	UNTIL
+;
+
+( [IF] is an immediate variant of IF.
+
+  This can be used directly from the Forth "REPL" but its more commonly used
+  for conditional compilation.
+)
+: [IF] IMMEDIATE ( flag -- )
+	0= IF
+		BEGIN
+			WORD
+			2DUP S" [ELSE]" COMPARE 0=
+			-ROT S" [THEN]" COMPARE 0=
+			OR
+		UNTIL
+	THEN
+;
+
+( [THEN] is an immediate variant of THEN. )
+: [THEN] IMMEDIATE
 ;
 
 ( NAME>STRING converts the name token to a string.
