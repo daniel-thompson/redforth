@@ -172,6 +172,7 @@ DOCOL:
 
 #ifdef HAVE_CODEGEN_WORDS
 #include "core-words.h"
+#include "debug-words.h"
 #include "tools-words.h"
 #endif
 

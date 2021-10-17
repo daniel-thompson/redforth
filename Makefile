@@ -14,7 +14,8 @@ all : redforth
 SRCS = libred.c main.c vm-gnuc.c
 CROSS_OBJS = $(patsubst %.c,build-cross/%.o,$(SRCS))
 HDRS = libred/libred.h words/native-words.h words/stdc-words.h
-CODEGEN_HDRS = words/core-words.h words/tools-words.h
+CODEGEN_FS = words/core-words.fs words/debug-words.fs words/tools-words.fs
+CODEGEN_HDRS = $(patsubst %.fs,%.h,$(CODEGEN_FS))
 
 build-cross/crossforth : build-cross $(CROSS_OBJS)
 	$(CC) $(CFLAGS) -o $@ $(CROSS_OBJS)
@@ -46,9 +47,9 @@ eyeball : redforth
 	cat eyeball.fs | ./redforth
 
 cross-check : build-cross/crossforth
-	cat words/core-words.fs words/tools-words.fs scripts/eyeball.fs | ./build-cross/crossforth | uniq -u > eyeball.log
+	cat $(CODEGEN_FS) scripts/eyeball.fs | ./build-cross/crossforth | uniq -u > eyeball.log
 	[ `cat eyeball.log | wc -l` -eq 2 ] || (cat eyeball.log; false)
-	cat words/core-words.fs words/tools-words.fs scripts/selftest.fs | ./build-cross/crossforth
+	cat $(CODEGEN_FS) scripts/selftest.fs | ./build-cross/crossforth
 	@$(RM) filetest.txt eyeball.log
 
 check : redforth
