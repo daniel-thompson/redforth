@@ -679,7 +679,6 @@ QNATIVE(CLITSTRING) /* ( -- c-addr u ) Load a C string literal */
 	 * such that CLITSTRING can cope regardless of the cell size of
 	 * the Forth running >ROM.
 	 */
-	ip += (tmp.u - 1) / sizeof(cell_t);	// skip "most" of the string
 	while (NULL == *ip)			// now skip NULL instructions
 		ip++;
 	NEXT();
