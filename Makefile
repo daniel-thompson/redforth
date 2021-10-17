@@ -25,10 +25,10 @@ build-cross/%.o : %.c
 OBJS = $(patsubst %.c,build/%.o,$(SRCS))
 
 redforth : build $(OBJS)
-	$(CROSS_COMPILE)$(CC) $(CFLAGS) -o $@ $(OBJS)
+	$(CROSS_COMPILE)$(CC) $(CFLAGS) $(CROSS_CFLAGS) -o $@ $(OBJS)
 
 build/%.o : %.c
-	$(CROSS_COMPILE)$(CC) $(CFLAGS) -DHAVE_CODEGEN_WORDS -c -o $@ $<
+	$(CROSS_COMPILE)$(CC) $(CFLAGS) $(CROSS_CFLAGS) -DHAVE_CODEGEN_WORDS -c -o $@ $<
 
 $(CODEGEN_HDRS) : do_codegen
 do_codegen : build-cross/crossforth
