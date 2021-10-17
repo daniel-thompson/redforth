@@ -126,7 +126,7 @@ T{ 1 2 3 1-   -> 1 2 2   }T
 
 T{ 0 CELL+ CELL- -> 0 }T
 \ CELL+ should increment by with 4 (32-bit cells) or 8 (64-bit cells)
-T{ 0 CELL+ DUP 8 = SWAP 8 = OR -> TRUE }T
+T{ 0 CELL+ DUP 4 = SWAP 8 = OR -> TRUE }T
 
 OK
 
