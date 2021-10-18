@@ -878,6 +878,23 @@
 	DUP 0< IF NEGATE THEN
 ;
 
+( ACCEPT reads characters into c-addr until end-of-line, but not more than u1 )
+:<> ACCEPT ( c-addr u1 -- u2 )
+	SWAP 0		( u1 c-addr u2 )
+	BEGIN
+		KEY DUP '\n' <>
+	WHILE		( u1 c-addr u2 key )
+		2 PICK C!	( store received key )
+		SWAP 1+ SWAP	( advance c-addr )
+		1+		( increase string length )
+		DUP 3 PICK >=	( compare u2 >= u1 )
+		IF
+			-ROT 2DROP [COMPILE] \ EXIT
+		THEN
+	REPEAT
+	DROP -ROT 2DROP
+;
+
 ( MAX selects the greater of two signed values )
 :<> MAX ( n1 n2 -- n3 )
 	2DUP > IF DROP ELSE NIP THEN
