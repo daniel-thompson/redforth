@@ -451,6 +451,7 @@ OK
 ( --------------------------------------------------------------------------- )
 ." Other core words "
 
+( ABS )
 T{           1 ABS ->          1 }T
 T{           0 ABS ->          0 }T
 T{          -1 ABS ->          1 }T
@@ -468,6 +469,12 @@ HERE SWAP HELLO COMPARE 0= -> TRUE }T
 T{ HERE 6 ACCEPT Hello, world
 HERE SWAP HELLO COMPARE 0= -> FALSE }T
 FORGET HELLO
+
+( [COMPILE] )
+: IGNORE-TO-CR [COMPILE] \ ;
+T{ 0 IGNORE-TO-CR 1+ 1 1 + 2 + 3
+-> 0 }T
+FORGET IGNORE-TO-CR
 
 T{  1  2 MAX ->  2 }T
 T{ -1  2 MAX ->  2 }T
