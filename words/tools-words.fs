@@ -207,6 +207,7 @@
 
 ( MANGLE changes a Forth word name in to a C-compatible symbol name )
 : MANGLE	( c-addr1 u1 -- c-addr2 u2 )
+	2DUP S" \" COMPARE 0= IF 2DROP S" COMMENT" THEN
 	2DUP S" '" COMPARE 0= IF 2DROP S" TICK" THEN
 	2DUP S" 1+" COMPARE 0= IF 2DROP S" ONEINCR" THEN
 	2DUP S" 1-" COMPARE 0= IF 2DROP S" ONEDECR" THEN
