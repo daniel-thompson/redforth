@@ -873,6 +873,10 @@
 	HERE @ 		( push start address )
 ;
 
+( ABS provides the absolute value of n1 )
+:<> ABS ( n1 -- n2 )
+	DUP 0< IF NEGATE THEN
+;
 
 ( MAX selects the greater of two signed values )
 :<> MAX ( n1 n2 -- n3 )
