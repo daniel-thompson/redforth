@@ -1,11 +1,4 @@
-redforth
 attic/
+build/
+build-*/
 .*.swp
-*.o
-words-codegen.h
-crossforth
-words-core.h
-words-tools.h
-words/core-words.h
-words/tools-words.h
-words/debug-words.h
