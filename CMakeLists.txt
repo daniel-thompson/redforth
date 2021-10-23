@@ -2,6 +2,10 @@
 
 cmake_minimum_required(VERSION 3.13)
 
+if(PICO_SDK_PATH)
+	include(${PICO_SDK_PATH}/pico_sdk_init.cmake)
+endif()
+
 project(redforth
 	VERSION 0.1.0
 )
@@ -88,4 +92,30 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Linux)
 		|| \
 			(cat eyeball.log; false)"
 	)
+endif()
+
+if(${CMAKE_SYSTEM_NAME} STREQUAL PICO)
+	pico_sdk_init()
+
+	add_executable(redforth
+		libred/libred.c
+		libred/vm-gnuc.c
+		ports/rp2/main.c
+	)
+
+	target_compile_definitions(redforth PUBLIC HAVE_CODEGEN_WORDS)
+	target_compile_definitions(redforth PUBLIC ENABLE_KEY_ECHO)
+	target_include_directories(redforth PUBLIC
+		${CMAKE_BINARY_DIR}
+		libred/
+		words/
+	)
+	add_dependencies(redforth codegen)
+
+	target_link_libraries(redforth pico_stdlib)
+
+	pico_enable_stdio_usb(redforth 1)
+	pico_enable_stdio_uart(redforth 0)
+
+	pico_add_extra_outputs(redforth)
 endif()
