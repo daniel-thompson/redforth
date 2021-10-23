@@ -25,9 +25,10 @@ set(FORTH_WORDS
 
 if(NOT CMAKE_CROSSCOMPILING)
 	add_executable(crossforth
-	       libred/libred.c
-	       libred/vm-gnuc.c
-	       ports/unix/main.c
+		libred/libred.c
+		libred/libred-stdc.c
+		libred/vm-gnuc.c
+		ports/unix/main.c
 	)
 	target_include_directories(crossforth PUBLIC
 		libred/
@@ -57,6 +58,8 @@ endif()
 if(${CMAKE_SYSTEM_NAME} STREQUAL Linux)
 	add_executable(redforth
 		libred/libred.c
+		libred/libred-linenoise.c
+		libred/linenoise.c
 		libred/vm-gnuc.c
 		ports/unix/main.c
 	)
@@ -99,6 +102,7 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL PICO)
 
 	add_executable(redforth
 		libred/libred.c
+		libred/libred-stdc.c
 		libred/vm-gnuc.c
 		ports/rp2/main.c
 	)
