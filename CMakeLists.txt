@@ -23,6 +23,7 @@ set(FORTH_WORDS
 	debug-words.h
 	tools-words.h
 )
+file(GLOB FORTH_SOURCES words/*.fs)
 
 if(NOT CMAKE_CROSSCOMPILING)
 	add_executable(crossforth
@@ -51,6 +52,7 @@ add_custom_command(
 	COMMAND ${CROSSFORTH}
 			< ${CMAKE_SOURCE_DIR}/scripts/codegen.fs
 	                > /dev/null
+	DEPENDS ${FORTH_SOURCES}
 )
 add_custom_target(codegen
 	DEPENDS ${FORTH_WORDS}
