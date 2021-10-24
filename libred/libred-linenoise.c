@@ -71,7 +71,7 @@ void do_EMIT(char ch)
 	write(fd_out, &ch, 1);
 }
 
-void do_TYPE(char *s, size_t len)
+void do_TYPE(const char *s, size_t len)
 {
 	write(fd_out, s, len);
 }

@@ -44,7 +44,7 @@ void do_EMIT(char ch)
 	fflush(rf_out);
 }
 
-void do_TYPE(char *s, size_t len)
+void do_TYPE(const char *s, size_t len)
 {
 	if (!rf_out)
 		rf_out = stdout;
