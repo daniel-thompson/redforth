@@ -103,8 +103,11 @@
  *
  */
 
+#include <sys/stat.h>
+#include <sys/types.h>
 #ifdef HAVE_TERMIOS
 #include <termios.h>
+#include <sys/ioctl.h>
 #endif
 #include <unistd.h>
 #include <stdlib.h>
@@ -113,9 +116,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <sys/ioctl.h>
 #include <unistd.h>
 #include "linenoise.h"
 
@@ -126,11 +126,8 @@ static linenoiseCompletionCallback *completionCallback = NULL;
 static linenoiseHintsCallback *hintsCallback = NULL;
 static linenoiseFreeHintsCallback *freeHintsCallback = NULL;
 
-static struct termios orig_termios; /* In order to restore at exit.*/
 static int maskmode = 0; /* Show "***" instead of input. For passwords. */
-static int rawmode = 0; /* For atexit() function to check if restore is needed*/
 static int mlmode = 0;  /* Multi line mode. Default is single line. */
-static int atexit_registered = 0; /* Register atexit just 1 time. */
 static int history_max_len = LINENOISE_DEFAULT_HISTORY_MAX_LEN;
 static int history_len = 0;
 static char **history = NULL;
@@ -173,7 +170,6 @@ enum KEY_ACTION{
 	BACKSPACE =  127    /* Backspace */
 };
 
-static void linenoiseAtExit(void);
 int linenoiseHistoryAdd(const char *line);
 static void refreshLine(struct linenoiseState *l);
 
@@ -229,6 +225,11 @@ static int isUnsupportedTerm(void) {
 }
 
 #ifdef HAVE_TERMIOS
+static struct termios orig_termios; /* In order to restore at exit.*/
+static int rawmode = 0; /* For atexit() function to check if restore is needed*/
+static int atexit_registered = 0; /* Register atexit just 1 time. */
+static void linenoiseAtExit(void);
+
 /* Raw mode: 1960 magic shit. */
 static int enableRawMode(int fd) {
     struct termios raw;
@@ -269,6 +270,24 @@ static void disableRawMode(int fd) {
     /* Don't even check the return value as it's too late. */
     if (rawmode && tcsetattr(fd,TCSAFLUSH,&orig_termios) != -1)
         rawmode = 0;
+}
+
+/* Free the history, but does not reset it. Only used when we have to
+ * exit() to avoid memory leaks are reported by valgrind & co. */
+static void freeHistory(void) {
+    if (history) {
+        int j;
+
+        for (j = 0; j < history_len; j++)
+            free(history[j]);
+        free(history);
+    }
+}
+
+/* At exit we'll try to fix the terminal to the initial conditions. */
+static void linenoiseAtExit(void) {
+    disableRawMode(STDIN_FILENO);
+    freeHistory();
 }
 #else /* HAVE_TERMIOS */
 static int enableRawMode(int fd) {
@@ -324,9 +343,14 @@ static int getCursorPosition() {
 /* Try to get the number of columns in the current terminal, or assume 80
  * if it fails. */
 static int getColumns() {
+#ifdef HAVE_TERMIOS
     struct winsize ws;
 
-    if (ioctl(1, TIOCGWINSZ, &ws) == -1 || ws.ws_col == 0) {
+    if (ioctl(1, TIOCGWINSZ, &ws) != -1 && ws.ws_col != 0) {
+        return ws.ws_col;
+    } else
+#endif
+    {
         /* ioctl() failed. Try to query the terminal itself. */
         int start, cols;
 
@@ -346,8 +370,6 @@ static int getColumns() {
             linenoiseWrite(seq,strlen(seq));
         }
         return cols;
-    } else {
-        return ws.ws_col;
     }
 
 failed:
@@ -1089,11 +1111,14 @@ char *linenoise(const char *prompt) {
     char buf[LINENOISE_MAX_LINE];
     int count;
 
+#if HAVE_ISATTY
     if (!isatty(STDIN_FILENO)) {
         /* Not a tty: read from file / pipe. In this mode we don't want any
          * limit to the line size, so we call a function to handle that. */
         return linenoiseNoTTY();
-    } else if (isUnsupportedTerm()) {
+    } else
+#endif
+    if (isUnsupportedTerm()) {
         size_t len;
 
         printf("%s",prompt);
@@ -1121,24 +1146,6 @@ void linenoiseFree(void *ptr) {
 }
 
 /* ================================ History ================================= */
-
-/* Free the history, but does not reset it. Only used when we have to
- * exit() to avoid memory leaks are reported by valgrind & co. */
-static void freeHistory(void) {
-    if (history) {
-        int j;
-
-        for (j = 0; j < history_len; j++)
-            free(history[j]);
-        free(history);
-    }
-}
-
-/* At exit we'll try to fix the terminal to the initial conditions. */
-static void linenoiseAtExit(void) {
-    disableRawMode(STDIN_FILENO);
-    freeHistory();
-}
 
 /* This is the API call to add a new entry in the linenoise history.
  * It uses a fixed array of char pointers that are shifted (memmoved)

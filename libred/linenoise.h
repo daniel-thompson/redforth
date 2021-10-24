@@ -48,6 +48,11 @@ typedef struct linenoiseCompletions {
   char **cvec;
 } linenoiseCompletions;
 
+#ifndef USE_READ_WRITE
+int linenoiseGetChar();
+void linenoiseWrite(const char *s, unsigned int len);
+#endif
+
 typedef void(linenoiseCompletionCallback)(const char *, linenoiseCompletions *);
 typedef char*(linenoiseHintsCallback)(const char *, int *color, int *bold);
 typedef void(linenoiseFreeHintsCallback)(void *);
