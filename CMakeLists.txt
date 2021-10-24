@@ -64,7 +64,11 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Linux)
 		ports/unix/main.c
 	)
 
-	target_compile_definitions(redforth PUBLIC HAVE_CODEGEN_WORDS)
+	target_compile_definitions(redforth PUBLIC
+		HAVE_CODEGEN_WORDS
+		HAVE_TERMIOS
+		USE_READ_WRITE
+	)
 	target_include_directories(redforth PUBLIC
 		${CMAKE_BINARY_DIR}
 		libred/
