@@ -263,6 +263,18 @@ QNATIVE(EXIT)
 	ip = POPRSP().p;
 	NEXT();
 
+/* SECRET_EXIT acts identically to a normal EXIT. However it also acts
+ * as a delimiter and tells SEE and >ROM that they can stop decompiling.
+ *
+ * This exit is "secret" because SEE will never decompile it (because
+ * it is only ever added implicitly by the ; word).
+ */
+QNATIVE(SECRET_EXIT)
+#undef  LINK
+#define LINK SECRET_EXIT
+	ip = POPRSP().p;
+	NEXT();
+
 /*
  * LITERALS  ----------------------------------------------------------------
  */
@@ -622,7 +634,7 @@ BUILTIN(COLON, ":")
 BUILTIN_FLAGS(SEMICOLON, ";", F_IMMED)
 #undef  LINK
 #define LINK SEMICOLON
-	COMPILE_TICK(EXIT)
+	COMPILE_TICK(SECRET_EXIT)
 	COMPILE(COMMA)		// Append EXIT (so the word will return)
 	COMPILE(LATEST)
 	COMPILE(FETCH)
@@ -749,7 +761,7 @@ QBUILTIN(QUIT)
 	COMPILE(RSPSTORE)			// clear the return stack
 	COMPILE(INTERPRET)			// interpret the next word...
 	COMPILE_BRANCH(-2)			// ... forever
-	UNREACHABLE()
+	COMPILE_EXIT();
 
 /*
  * ODDS AND ENDS  -----------------------------------------------------------

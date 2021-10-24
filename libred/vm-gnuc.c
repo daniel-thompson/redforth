@@ -94,7 +94,7 @@ label:                                                                         \
 	    {.codeword = &&DOCOL},                                             \
 	    {
 
-#define UNREACHABLE()                                                          \
+#define BUILTIN_COMPLETE()                                                     \
 	    }                                                                  \
 	};
 
@@ -106,8 +106,8 @@ label:                                                                         \
 	                      (void *) (sizeof(s)-1),                          \
 			      (void *) &(s),
 #define COMPILE_EXIT()                                                         \
-	COMPILE(EXIT)                                                          \
-	UNREACHABLE()
+	COMPILE(SECRET_EXIT)                                                   \
+	BUILTIN_COMPLETE()
 #define COMPILE_LIT(lit) COMPILE(LIT) (void *) lit,
 #define COMPILE_TICK(word) COMPILE(TICK) COMPILE(word)
 

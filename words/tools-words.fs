@@ -149,11 +149,11 @@
 	                  DOCOL | end-of-word start-of-data )
 
 	BEGIN
-		2DUP >
-	WHILE
 		SWAP >R		( xt ip )
 		SWAP DUP >R	( ip xt )
 		SWAP DUP @	( xt ip codeword )
+		DUP ' SECRET_EXIT <>
+	WHILE
 		ROT EXECUTE	( ip )
 
 		R> R> ROT	( xt limit ip )
@@ -161,6 +161,7 @@
 	REPEAT
 
 	DROP 2DROP	( restore stack )
+	2R> 2DROP	( restore return stack)
 ;
 
 : STRCAT	( c-addr1 u1 c-addr2 u2 )
@@ -409,24 +410,10 @@
 		." 	COMPILE_TICK(" CFA> NAME>STRING MANGLE TYPE ." )" CR	( and print it )
 	ENDOF
 	' EXIT OF		( is it EXIT? )
-		( We expect the last word to be EXIT, and if it is then
-		  we don't print it because EXIT is normally implied by
-		  ;.  EXIT can also appear in the middle of words, and
-		  then it needs to be printed.
-		)
-
-		2DUP			( end start end start )
-\	TODO:
-\         This code doesn't work for built-in words which have a terminating
-\         NULL value on variable length arrays. The replacement code below
-\         also hides exit when it is the last-but-one word (since there could
-\         be nothing useful in the final slot).
-\		1 CELLS +		( end start end start+4 )
-\		<> IF			( end start | we're not at the end )
-		2 CELLS +
-		> IF
-			." 	COMPILE(EXIT)" CR
-		THEN
+		." 	COMPILE(EXIT)" CR
+	ENDOF
+	' SECRET_EXIT OF	( is it the secret exit? )
+					( do nothing )
 	ENDOF
 				( default case: )
 		DUP			( in the default case we always need to DUP before using )
@@ -519,7 +506,7 @@
   codeword.
 
   In order to handle immediate values (LIT, LITSTRING and ') we may
-  modify the value of ip in order to skip any embedded immediates.
+  modify the value of ip in order to skip any embedded immediate values.
 )
 : (SEE)		( limit ip codeword -- limit ip )
 	CASE
@@ -571,24 +558,9 @@
 		ID. SPACE
 	ENDOF
 	' EXIT OF		( is it EXIT? )
-		( We expect the last word to be EXIT, and if it is then
-		  we don't print it because EXIT is normally implied by
-		  ;.  EXIT can also appear in the middle of words, and
-		  then it needs to be printed.
-		)
-
-		2DUP			( end start end start )
-\	TODO:
-\         This code doesn't work for built-in words which have a terminating
-\         NULL value on variable length arrays. The replacement code below
-\         also hides exit when it is the last-but-one word (since there could
-\         be nothing useful in the final slot).
-\		1 CELLS +		( end start end start+4 )
-\		<> IF			( end start | we're not at the end )
-		2 CELLS +
-		> IF
-			." EXIT "
-		THEN
+		." EXIT "
+	ENDOF
+	' SECRET_EXIT OF		( is it the secret exit? )
 	ENDOF
 				( default case: )
 		DUP			( in the default case we always need to DUP before using )
