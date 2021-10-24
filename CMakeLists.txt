@@ -4,6 +4,7 @@ cmake_minimum_required(VERSION 3.13)
 
 if(PICO_SDK_PATH)
 	include(${PICO_SDK_PATH}/pico_sdk_init.cmake)
+	set(CMAKE_SYSTEM_NAME PICO)
 endif()
 
 project(redforth
@@ -29,6 +30,9 @@ if(NOT CMAKE_CROSSCOMPILING)
 		libred/libred-stdc.c
 		libred/vm-gnuc.c
 		ports/unix/main.c
+	)
+	target_compile_definitions(crossforth PUBLIC
+		HAVE_STDC_WORDS
 	)
 	target_include_directories(crossforth PUBLIC
 		libred/
@@ -65,7 +69,9 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Linux)
 	)
 
 	target_compile_definitions(redforth PUBLIC
+		HAVE_STDC_WORDS
 		HAVE_CODEGEN_WORDS
+		HAVE_ISATTY
 		HAVE_TERMIOS
 		USE_READ_WRITE
 	)
@@ -106,12 +112,18 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL PICO)
 
 	add_executable(redforth
 		libred/libred.c
-		libred/libred-stdc.c
+		libred/libred-rp2.c
+		libred/linenoise.c
 		libred/vm-gnuc.c
 		ports/rp2/main.c
 	)
 
-	target_compile_definitions(redforth PUBLIC HAVE_CODEGEN_WORDS)
+	target_compile_definitions(redforth PUBLIC
+		HAVE_STDC_WORDS
+		HAVE_RP2_WORDS
+		HAVE_CODEGEN_WORDS
+		PICO_ENTER_USB_BOOT_ON_EXIT
+	)
 	target_compile_definitions(redforth PUBLIC ENABLE_KEY_ECHO)
 	target_include_directories(redforth PUBLIC
 		${CMAKE_BINARY_DIR}

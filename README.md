@@ -53,6 +53,6 @@ mkdir -p build-rp2
 cd build-rp2
 git clone https://github.com/raspberrypi/pico-sdk
 (cd pico-sdk; git submodule update --init)
-cmake -DPICO_SDK_PATH=pico-sdk -DREDFORTH_TOOLS_DIR=../build ..
+cmake -DPICO_SDK_PATH=$PWD/pico-sdk -DREDFORTH_TOOLS_DIR=../build ..
 make -j `nproc`
 ~~~

@@ -168,7 +168,14 @@ DOCOL:
         RAW_NEXT();
 
 #include "native-words.h"
+
+#ifdef HAVE_STDC_WORDS
 #include "stdc-words.h"
+#endif
+
+#ifdef HAVE_RP2_WORDS
+#include "rp2-words.h"
+#endif
 
 #ifdef HAVE_CODEGEN_WORDS
 #include "core-words.h"
