@@ -20,10 +20,8 @@ Native builds
 Try:
 
 ~~~
-mkdir -p build
-cd build
-cmake ..
-make
+cmake -B build/
+make -C build/ -j `nproc`
 make test
 ~~~
 
@@ -33,14 +31,11 @@ Cross builds using musl-cross-make toolchains
 Try something like the following (adapted for your target):
 
 ~~~
-mkdir -p build-armv7
-cd build-armv7
-cmake \
-	-DCMAKE_TOOLCHAIN_FILE=../scripts/musl-cross.cmake \
+cmake -B build-musl/ \
+	-DCMAKE_TOOLCHAIN_FILE=scripts/musl-cross.cmake \
 	-DCROSS_COMPILE=arm-linux-musleabihf- \
-	-DREDFORTH_TOOLS_DIR=../build \
-	..
-make -j `nproc`
+	-DREDFORTH_TOOLS_DIR=$PWD/build \
+make -C build-musl/ -j `nproc`
 ~~~
 
 Build for Raspberry Pi Pico
@@ -49,10 +44,10 @@ Build for Raspberry Pi Pico
 Try:
 
 ~~~
-mkdir -p build-rp2
-cd build-rp2
 git clone https://github.com/raspberrypi/pico-sdk
 (cd pico-sdk; git submodule update --init)
-cmake -DPICO_SDK_PATH=$PWD/pico-sdk -DREDFORTH_TOOLS_DIR=../build ..
-make -j `nproc`
+cmake -B build-rp2/ \
+	-DPICO_SDK_PATH=$PWD/pico-sdk \
+	-DREDFORTH_TOOLS_DIR=$PWD/build
+make -C build-rp2/ -j `nproc`
 ~~~

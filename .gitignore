@@ -1,4 +1,5 @@
 attic/
 build/
 build-*/
+pico-sdk/
 .*.swp
