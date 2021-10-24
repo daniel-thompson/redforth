@@ -20,10 +20,6 @@ char do_KEY(void)
 		rf_in = stdin;
 
 	int ch = fgetc(rf_in);
-#ifdef ENABLE_KEY_ECHO
-	if (rf_in == stdin)
-		putchar(ch);
-#endif
 	if (ch == EOF) {
 		if (rf_in == stdin) {
 			exit(0);
