@@ -118,23 +118,26 @@
 ;
 
 ( (STRING>NAME) is the inner-loop for STRING>NAME )
-: (STRING>NAME) ( c-addr u prev nt -- c-addr u prev TRUE | prev nt FALSE )
-	DUP NAME>STRING
-	5 PICK 5 PICK COMPARE
-	0= IF		( got it )
-		2SWAP 2DROP	( drop the search string )
-		FALSE
+: (STRING>NAME) ( c-addr u nt -- c-addr u TRUE | nt 0 FALSE )
+	DUP NAME>STRING		( c-addr u nt c2-addr u2 )
+	4 PICK 4 PICK COMPARE	( c-addr u nt cmp )
+	0= IF			( c-addr u nt )
+		-ROT 2DROP	( nt )
+		0 FALSE		( nt 0 FALSE )
 	ELSE
-		SWAP DROP	( update prev )
-		TRUE
+		DROP		( c-addr u )
+		TRUE		( c-addr u TRUE )
 	THEN
 ;
 
 : STRING>NAME ( c-addr u -- nt limit )
-	HERE @ ' (STRING>NAME) GET-CURRENT TRAVERSE-WORDLIST
-	( -- prev nt )
-	DUP @		( follow link pointer )
-	ROT MAX		( keep highest of prev and next )
+	' (STRING>NAME) GET-CURRENT TRAVERSE-WORDLIST
+	( -- nt 0 ) ( OR ) ( -- c-addr u )
+	0= IF
+		0
+	ELSE
+		DROP 0 0
+	THEN
 ;
 
 ( ITERATE-CODE steps through the data field of a DOCOL word.
@@ -578,6 +581,10 @@
 	' (SEE)
 	WORD STRING>NAME
 			( nt limit === start-of-word end-of-word )
+	OVER 0= IF
+		." Bad word" CR
+		EXIT
+	THEN
 
 	( begin the definition with : NAME [IMMEDIATE] )
 	[CHAR] : EMIT SPACE
