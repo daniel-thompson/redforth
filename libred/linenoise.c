@@ -299,12 +299,26 @@ static void disableRawMode(int fd) {
 #endif /* HAVE_TERMIOS */
 
 #ifdef USE_READ_WRITE
+static char pendingChar = 0;
+
 static int linenoiseGetChar() {
     char c;
+
+    if (pendingChar) {
+	c = pendingChar;
+	pendingChar = 0;
+	return c;
+    }
+
     int n = read(STDIN_FILENO,&c,1);
     if (n == 1)
         return c;
     return -1;
+}
+
+static void linenoiseUngetc(char c)
+{
+    pendingChar = c;
 }
 
 static void linenoiseWrite(const char *s, unsigned int len) {
@@ -318,7 +332,7 @@ static void linenoiseWrite(const char *s, unsigned int len) {
  * and return it. On error -1 is returned, on success the position of the
  * cursor. */
 static int getCursorPosition() {
-    char buf[32];
+    char buf[32] = "\x1b[";
     int cols, rows;
     unsigned int i = 0;
 
@@ -328,14 +342,17 @@ static int getCursorPosition() {
     /* Read the response: ESC [ rows ; cols R */
     while (i < sizeof(buf)-1) {
         int ch = linenoiseGetChar();
-        if (ch < 0) break;
-        if (ch == 'R') break;
         buf[i++] = ch;
+	if (buf[0] != ESC || buf[1] != '[' ||
+		NULL == strchr("\x1b[0123456789;R", ch)) {
+	    linenoiseUngetc(ch);
+	    return -1;
+	}
+        if (ch == 'R') break;
     }
     buf[i] = '\0';
 
     /* Parse it. */
-    if (buf[0] != ESC || buf[1] != '[') return -1;
     if (sscanf(buf+2,"%d;%d",&rows,&cols) != 2) return -1;
     return cols;
 }
@@ -1071,6 +1088,7 @@ static int linenoiseRaw(char *buf, size_t buflen, const char *prompt) {
  * program using linenoise is called in pipe or with a file redirected
  * to its standard input. In this case, we want to be able to return the
  * line regardless of its length (by default we are limited to 4k). */
+#ifdef HAVE_ISATTY
 static char *linenoiseNoTTY(void) {
     char *line = NULL;
     size_t len = 0, maxlen = 0;
@@ -1101,6 +1119,7 @@ static char *linenoiseNoTTY(void) {
         }
     }
 }
+#endif
 
 /* The high level function that is the main API of the linenoise library.
  * This function checks if the terminal has basic capabilities, just checking
@@ -1111,7 +1130,7 @@ char *linenoise(const char *prompt) {
     char buf[LINENOISE_MAX_LINE];
     int count;
 
-#if HAVE_ISATTY
+#ifdef HAVE_ISATTY
     if (!isatty(STDIN_FILENO)) {
         /* Not a tty: read from file / pipe. In this mode we don't want any
          * limit to the line size, so we call a function to handle that. */

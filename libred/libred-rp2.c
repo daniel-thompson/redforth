@@ -17,10 +17,22 @@
 static char *line;
 static const char *pending_input;
 static const char newline[] = "\n";
+static char pending_char = 0;
 
 int linenoiseGetChar()
 {
+	if (pending_char) {
+		char c = pending_char;
+		pending_char = 0;
+		return c;
+	}
+
 	return getchar();
+}
+
+void linenoiseUngetc(char c)
+{
+	pending_char = c;
 }
 
 void linenoiseWrite(const char *s, unsigned int len)

@@ -50,6 +50,7 @@ typedef struct linenoiseCompletions {
 
 #ifndef USE_READ_WRITE
 int linenoiseGetChar();
+void linenoiseUngetc(char c);
 void linenoiseWrite(const char *s, unsigned int len);
 #endif
 
