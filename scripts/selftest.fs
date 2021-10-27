@@ -1,8 +1,13 @@
 \ SPDX-License-Identifier: MIT
 
+VARIABLE ERROR_COUNT
+0 ERROR_COUNT !
+
 ( ASSERT verifis that the provided condition, n, is TRUE )
 : ASSERT ( n -- )
 	0= IF
+		1 ERROR_COUNT +!
+
 		."  FAILED
 "
 		." <" DEPTH 1 CELLS / . ." >  " .S CR EMIT
@@ -587,7 +592,13 @@ OK
 ." Checking for stack leaks ..."
 DEPTH 0= ASSERT
 OK
-BYE
+
+ERROR_COUNT @ 0= [IF]
+	BYE
+[ELSE]
+	1 FN-exit CCALL1
+[THEN]
+
 0 ASSERT
 
 \ These tests require eyeball/diff testing
