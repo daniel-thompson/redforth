@@ -553,10 +553,10 @@ FORGET TOOLS3
 ( STRING>NAME is a vendor extension and has a rather odd interface that pushes
   nt and limit to the stack.
 )
-T{ S" +" STRING>NAME DROP 0<> -> TRUE }T
-T{ S" +" 2DUP STRING>NAME DROP NAME>STRING COMPARE 0= -> TRUE }T
+T{ S" +" STRING>NAME 0<> -> TRUE }T
+T{ S" +" 2DUP STRING>NAME NAME>STRING COMPARE 0= -> TRUE }T
 ( does an unknown word yeild 0 )
-T{ S" +++" STRING>NAME DROP 0= -> TRUE }T
+T{ S" +++" STRING>NAME 0= -> TRUE }T
 
 : TOOLS6 ( count ip codeword -- count ip ) DROP SWAP 1+ SWAP ;
 : TOOLS7 ' TOOLS6 S" TOOLS6" STRING>NAME ITERATE-CODE ;

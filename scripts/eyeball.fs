@@ -53,6 +53,10 @@ SEE TSEE1
 ." : TSEE1 10 40 * ;" CR
 SEE TSEE2
 ." : TSEE2 10 1- DUP <= 0 0BRANCH ( " -6 CELLS . ." ) DROP ;" CR
+SEE DOESNOTEXIT
+." Bad word" CR
+SEE DROP
+." : DROP ;" CR
 
 SEE HIDE
 ." : HIDE WORD FIND HIDDEN ;" CR
@@ -83,7 +87,7 @@ FORGET TMPWORD
 ." TMPWORD " WORDS
 
 ( Test STRING>NAME )
-S" WORDS" STRING>NAME DROP NAME>STRING TYPE CR
+S" WORDS" STRING>NAME NAME>STRING TYPE CR
 ." WORDS" CR
 
 S" ;" MANGLE TYPE CR
@@ -91,12 +95,6 @@ S" ;" MANGLE TYPE CR
 
 S" HELLO" MANGLE TYPE CR
 ." HELLO" CR
-
-\ : ROM WORD STRING>NAME >ROM ;
-\ ROM :
-\ ROM ;
-\ ROM :<>
-\ FORGET ROM
 
 ( Make sure nothing we did in this test leaked anything on the data stack )
 DEPTH 0= ASSERT

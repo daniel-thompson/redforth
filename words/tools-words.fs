@@ -133,12 +133,11 @@
 : STRING>NAME ( c-addr u -- nt limit )
 	' (STRING>NAME) GET-CURRENT TRAVERSE-WORDLIST
 	( -- nt 0 ) ( OR ) ( -- c-addr u )
-	0= IF
-		0
-	ELSE
-		DROP 0 0
+	0<> IF
+		DROP 0
 	THEN
 ;
+
 
 ( ITERATE-CODE steps through the data field of a DOCOL word.
 
@@ -146,8 +145,15 @@
   ( limit ip codeword -- limit ip ). xt may modify ip when decompiling
   words that require more than 1 cell.
 )
-: ITERATE-CODE ( xt nt limit -- )
-	SWAP		( xt limit nt )
+: ITERATE-CODE ( xt nt -- )
+	0 SWAP		( xt 0 nt )
+
+	( ignore native words )
+	DUP >CFA @ DOCOL <> IF
+		DROP 2DROP
+		EXIT
+	THEN
+
 	>DFA		( get the data address, ie. points after
 	                  DOCOL | end-of-word start-of-data )
 
@@ -163,7 +169,9 @@
 		1 CELLS +
 	REPEAT
 
-	DROP 2DROP	( restore stack )
+	ROT EXECUTE	( ip )
+
+	DROP		( restore stack )
 	2R> 2DROP	( restore return stack)
 ;
 
@@ -328,7 +336,7 @@
   In order to handle immediate values (LIT, LITSTRING and ') we may
   modify the value of ip in order to skip any embedded immediates.
 )
-: (>ROM)	( limit ip codeword -- limit ip )
+: (>ROM)	( ip codeword -- ip )
 	CASE
 	0 OF			( C builtins may have 0 termination...
 	                          ignore this!
@@ -433,25 +441,36 @@
   replaced with branches. However it is sufficient to allow us to reconstruct
   an equivalent.
 )
-: >ROM ( nt limit -- )
-
+: >ROM ( nt -- )
 	( begin the definition with the BUILTIN_FLAGS(C_NAME, "WORDNAME", <flags>) macro )
 	." BUILTIN_FLAGS("
-	OVER NAME>STRING MANGLE TYPE
-	." , " [CHAR] " EMIT OVER NAME>STRING STRQUOTE TYPE [CHAR] " EMIT
+	DUP NAME>STRING MANGLE TYPE
+	." , " [CHAR] " EMIT DUP NAME>STRING STRQUOTE TYPE [CHAR] " EMIT
 	." , 0"
-	OVER ?IMMEDIATE IF ."  | F_IMMED" THEN
-	OVER ?HIDDEN    IF ."  | F_HIDDEN" THEN
+	DUP ?IMMEDIATE IF ."  | F_IMMED" THEN
+	DUP ?HIDDEN    IF ."  | F_HIDDEN" THEN
 	." )" CR
 
 	." #undef  LINK" CR
-	." #define LINK " OVER NAME>STRING MANGLE TYPE CR
+	." #define LINK " DUP NAME>STRING MANGLE TYPE CR
 
-	' (>ROM) -ROT
+	' (>ROM) SWAP
 	ITERATE-CODE
 
 	( finalize and we are done )
 	." 	COMPILE_EXIT()" CR CR
+;
+
+: SEE>ROM ( -- )
+	WORD STRING>NAME
+
+	DUP 0= IF
+		." Bad word" CR
+		DROP
+		EXIT
+	THEN
+
+	>ROM
 ;
 
 : (LATEST>ROM)	( nt -- flag )
@@ -471,7 +490,7 @@
 	BEGIN
 		DUP 0<>
 	WHILE
-		NAME>STRING STRING>NAME >ROM
+		>ROM
 	REPEAT
 	DROP
 ;
@@ -496,10 +515,6 @@
 	BEGIN
 		DUP 0<>
 	WHILE
-		( look up the limit for decompiling )
-		NAME>STRING STRING>NAME
-
-		( codegen )
 		>ROM
 	REPEAT
 	DROP
@@ -511,7 +526,7 @@
   In order to handle immediate values (LIT, LITSTRING and ') we may
   modify the value of ip in order to skip any embedded immediate values.
 )
-: (SEE)		( limit ip codeword -- limit ip )
+: (SEE)		( ip codeword -- ip )
 	CASE
 	0 OF			( C builtins may have 0 termination...
 	                          ignore this!
@@ -578,20 +593,20 @@
   the word starting from the data field area until we reach the limit.
 )
 : SEE	( -- )
-	' (SEE)
 	WORD STRING>NAME
-			( nt limit === start-of-word end-of-word )
-	OVER 0= IF
+
+	DUP 0= IF
 		." Bad word" CR
+		DROP
 		EXIT
 	THEN
 
 	( begin the definition with : NAME [IMMEDIATE] )
 	[CHAR] : EMIT SPACE
-	OVER NAME>STRING TYPE SPACE
-	OVER ?IMMEDIATE IF ." IMMEDIATE " THEN
+	DUP NAME>STRING TYPE SPACE
+	DUP ?IMMEDIATE IF ." IMMEDIATE " THEN
 
-	ITERATE-CODE
+	' (SEE) SWAP ITERATE-CODE
 
 	( finalize and we are done )
 	[CHAR] ; EMIT CR
