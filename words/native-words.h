@@ -726,7 +726,7 @@ QNATIVE(INTERPRET)
 		fprintf(stderr, "%"PRIdPTR": Bad word '%s'\n", var_LINENO, word);
 		if (var_STATE) {
 			// TODO: lexer driven error recovery? ABORT?
-			exit(-1);
+			exit(1);
 		}
 		RAW_NEXT();
 	}
