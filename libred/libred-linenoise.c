@@ -57,10 +57,12 @@ char do_KEY(void)
 		return do_KEY();
 	}
 
-	line = linenoise("");
-	if (!line) {
-		exit(0);
-	}
+	do {
+		line = linenoise("");
+		if (!line)
+			exit(0);
+	} while (line[0] == '\0');
+
 	linenoiseHistoryAdd(line);
 	pending_input = line;
 	return do_KEY();
