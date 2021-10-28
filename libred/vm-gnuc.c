@@ -172,14 +172,16 @@ DOCOL:
 #ifdef HAVE_STDC_WORDS
 #include "stdc-words.h"
 #endif
-
 #ifdef HAVE_RP2_WORDS
 #include "rp2-words.h"
 #endif
-
-#ifdef HAVE_CODEGEN_WORDS
+#ifdef HAVE_CORE_WORDS
 #include "core-words.h"
+#endif
+#ifdef HAVE_DEBUG_WORDS
 #include "debug-words.h"
+#endif
+#ifdef HAVE_TOOLS_WORDS
 #include "tools-words.h"
 #endif
 
