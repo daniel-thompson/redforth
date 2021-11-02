@@ -11,6 +11,10 @@
 
 #include "libred.h"
 
+#ifdef HAVE_RP2_WORDS
+#include "littlefs.h"
+#endif
+
 #define PUSH(p) do { dsp[-1] = (p); dsp--; } while(0)
 #define POP() (*dsp++)
 #define PUSHRSP(p) do { rsp[-1] = (p); rsp--; } while(0)
@@ -180,6 +184,12 @@ DOCOL:
 #endif
 #ifdef HAVE_DEBUG_WORDS
 #include "debug-words.h"
+#endif
+#ifdef HAVE_FILE_WORDS
+#include "file-words.h"
+#endif
+#ifdef HAVE_RP2_FILE_WORDS
+#include "rp2-file-words.h"
 #endif
 #ifdef HAVE_TOOLS_WORDS
 #include "tools-words.h"

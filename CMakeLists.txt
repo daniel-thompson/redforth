@@ -21,6 +21,8 @@ add_compile_options(-O2)
 set(FORTH_WORDS
 	core-words.h
 	debug-words.h
+	file-words.h
+	rp2-file-words.h
 	tools-words.h
 )
 file(GLOB FORTH_SOURCES words/*.fs)
@@ -74,6 +76,7 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Linux)
 		HAVE_STDC_WORDS
 		HAVE_CORE_WORDS
 		HAVE_DEBUG_WORDS
+		HAVE_FILE_WORDS
 		HAVE_TOOLS_WORDS
 		HAVE_ISATTY
 		HAVE_TERMIOS
@@ -89,7 +92,11 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Linux)
 	include(CTest)
 	add_test(
 		NAME crosstest
-		COMMAND sh -c "cat core-words.fs debug-words.fs tools-words.fs \
+		COMMAND sh -c "cat \
+			core-words.fs \
+			debug-words.fs \
+			file-words.fs \
+			tools-words.fs \
 			${CMAKE_SOURCE_DIR}/scripts/selftest.fs \
 			| ${CROSSFORTH}"
 
@@ -119,6 +126,9 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL PICO)
 		libred/libred-rp2.c
 		libred/linenoise.c
 		libred/vm-gnuc.c
+		ports/rp2/littlefs.c
+		ports/rp2/littlefs/lfs.c
+		ports/rp2/littlefs/lfs_util.c
 		ports/rp2/main.c
 	)
 
@@ -127,6 +137,7 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL PICO)
 		HAVE_RP2_WORDS
 		HAVE_CORE_WORDS
 		HAVE_DEBUG_WORDS
+		HAVE_RP2_FILE_WORDS
 		HAVE_TOOLS_WORDS
 		PICO_ENTER_USB_BOOT_ON_EXIT
 	)
@@ -135,6 +146,8 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL PICO)
 		${CMAKE_BINARY_DIR}
 		libred/
 		words/
+		ports/rp2/
+		ports/rp2/littlefs/
 	)
 	add_dependencies(redforth codegen)
 

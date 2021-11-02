@@ -214,15 +214,15 @@ NATIVE(ZGT, "0>") /* ( a -- a>0 ) */
 	dsp[0].n = dsp[0].n > 0;
 	NEXT();
 
-NATIVE(ZLE, "0<=") /* ( a -- a<=0 ) */
+NATIVE(ZLTEQU, "0<=") /* ( a -- a<=0 ) */
 #undef  LINK
-#define LINK ZLE
+#define LINK ZLTEQU
 	dsp[0].n = dsp[0].n <= 0;
 	NEXT();
 
-NATIVE(ZGE, "0>=") /* ( a -- a>=0 ) */
+NATIVE(ZGTEQU, "0>=") /* ( a -- a>=0 ) */
 #undef  LINK
-#define LINK ZGE
+#define LINK ZGTEQU
 	dsp[0].n = dsp[0].n >= 0;
 	NEXT();
 
