@@ -1,0 +1,3 @@
+[submodule "ports/rp2/littlefs"]
+	path = ports/rp2/littlefs
+	url = https://github.com/littlefs-project/littlefs
