@@ -7,36 +7,50 @@
   string to hand to C functions.
 )
 
-: MODE_R Z" r" ;
-: MODE_W Z" w" ;
-: MODE_A Z" a" ;
+: R/O Z" r" ;
+: W/O Z" w" ;
 
-: OPEN-FILE ( addr u cstr -- file (if successful) | addr u cstr -- 0 (if there was an error) )
+: (OPEN-FILE)		( c-addr u mode -- fileid ior )
 	-ROT CSTRING
-	FN-fopen
-	CCALL2
+	FN-fopen CCALL2
+	DUP IF
+		0
+	ELSE
+		-1
+	THEN
 	;
 
-: CLOSE-FILE	( stream -- FALSE (if successful) | stream -- TRUE (if there was an error) )
+: CREATE-FILE		( c-addr u mode -- fileid ior )
+	(OPEN-FILE)
+	;
+
+: OPEN-FILE		( c-addr u mode -- fileid ior )
+	DUP C@
+	[CHAR] w = IF
+		DROP
+		Z" a"
+	THEN
+	(OPEN-FILE)
+	;
+
+: CLOSE-FILE		( fileid -- ior )
 	FN-fclose
 	CCALL1
 	0<>
 ;
 
-: READ-FILE	( addr u file - FALSE (if successful) | addr u file -- TRUE (if there was an errro) )
-	-ROT
-	1 -ROT
-	SWAP
-	FN-fread
-	CCALL4
-	0=
-;
+: READ-FILE		( c-addr u1 fileid -- u2 ior )
+	-ROT			( fileid c-addr u1 )
+	SWAP			( fileid u1 c-addr )
+	1 SWAP			( fileid u1 1 c-addr )
+	FN-fread CCALL4		( u2 )
+	DUP 0<			( u2 ior )
+	;
 
-: WRITE-FILE	( addr u file - FALSE (if successful) | addr u file -- TRUE (if there was an errro) )
-	-ROT
-	1 -ROT
-	SWAP
-	FN-fwrite
-	CCALL4
-	0=
-;
+: WRITE-FILE		( c-addr u fileid -- ior )
+	-ROT			( fileid c-addr u1 )
+	1 -ROT			( fileid 1 c-addr u1 )
+	SWAP			( fileid 1 u1 c-addr )
+	FN-fwrite CCALL4	( ior )
+	1 <>			( ior )
+	;
