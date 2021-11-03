@@ -1452,12 +1452,6 @@
 	S0 @ +		( add to base stack address )
 ;
 
-(
-	SYSTEM CALLS AND FILES  ----------------------------------------------------------------------
-
-	Miscellaneous words related to system calls, and standard access to files.
-)
-
 ( BYE exits by calling the Linux exit(2) syscall. )
 : BYE		( -- )
 	0		( return code (0) )
@@ -1465,31 +1459,20 @@
 	CCALL1
 ;
 
-(
-	MORECORE should increases the data segment by the specified number of cells.
-	In this FORTH, MORECORE simply switches the data section to a new block of
-	memory. Any unused cells are wasted.
+( MORECORE should increases the data segment by the specified number of cells.
+  In this FORTH, MORECORE simply switches the data section to a new block of
+  memory. Any unused cells are wasted.
 
-	This FORTH doesn't automatically increase the size of the data segment "on demand"
-	(ie. when , (COMMA), ALLOT, CREATE, and so on are used).  Instead the programmer
-	needs to be aware of how much space a large allocation will take, check UNUSED, and
-	call MORECORE if necessary.  A simple programming exercise is to change the
-	implementation of the data segment so that MORECORE is called automatically if
-	the program needs more memory.
+  This FORTH doesn't automatically increase the size of the data segment "on
+  demand" (ie. when , (COMMA), ALLOT, CREATE, and so on are used).  Instead the
+  programmer needs to be aware of how much space a large allocation will take,
+  check UNUSED, and call MORECORE if necessary.  A simple programming exercise
+  is to change the implementation of the data segment so that MORECORE is
+  called automatically if the program needs more memory.
 )
-: MALLOC	( u -- addr )
-	FN-malloc
-	CCALL1
-;
-
-: FREE		( addr -- )
-	FN-free
-	CCALL1
-	DROP
-;
 
 : MORECORE	( cells -- )
-	CELLS MALLOC HERE !
+	CELLS ALLOCATE IF HERE ! THEN
 ;
 
 (

@@ -4,11 +4,12 @@
 : W/O [ LFS_O_WRONLY LFS_O_CREAT OR ] LITERAL ;
 
 : NEW-FILEID ( -- fileid )
-        LFS_FILE_SIZE MALLOC
-        ; 
+	LFS_FILE_SIZE ALLOCATE
+	0<> IF ABORT THEN
+	;
 
 : DELETE-FILEID ( fileid -- )
-        FREE
+        FREE DROP
         ;
 
 : (OPEN-FILE)   ( addr u mode -- fileid ior)
@@ -17,7 +18,8 @@
         DUP >R
         LFS FN-lfs_file_open CCALL4
         R> OVER IF
-                FREE 0
+                FREE	( this is an error so whatever FREE puts into
+		          fileid is fine )
         THEN
         SWAP
         ;
@@ -33,13 +35,12 @@
         ;
 
 : CLOSE-FILE	( fileid -- ior )
-        DUP
-        LFS FN-lfs_file_close CCALL2
-        SWAP OVER 0= IF
-                FREE
-        ELSE
-                DROP
-        THEN
+        DUP				( fileid fileid )
+        LFS FN-lfs_file_close CCALL2	( fileid ior )
+        SWAP OVER 0= IF			( ior fileid )
+                FREE			( ior fior )
+	THEN
+	DROP				( ior )
         ;
 
 : READ-FILE     ( c-addr u1 fileid -- u2 ior )

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
 #include <ctype.h>
+#include <errno.h>
 #include <inttypes.h>
 #include <stdbool.h>
 #include <stddef.h>
@@ -175,6 +176,9 @@ DOCOL:
 
 #ifdef HAVE_STDC_WORDS
 #include "stdc-words.h"
+#endif
+#ifdef HAVE_MEMORY_WORDS
+#include "memory-words.h"
 #endif
 #ifdef HAVE_RP2_WORDS
 #include "rp2-words.h"

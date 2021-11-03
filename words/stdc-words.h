@@ -23,14 +23,6 @@ CONSTANT("FN-exit", FN_exit, (uintptr_t) &exit)
 #undef  LINK
 #define LINK FN_exit
 
-CONSTANT("FN-malloc", FN_malloc, (uintptr_t) &malloc)
-#undef  LINK
-#define LINK FN_malloc
-
-CONSTANT("FN-free", FN_free, (uintptr_t) &free)
-#undef  LINK
-#define LINK FN_free
-
 QNATIVE(INCLUDE)
 #undef  LINK
 #define LINK INCLUDE

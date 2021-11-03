@@ -35,6 +35,7 @@ if(NOT CMAKE_CROSSCOMPILING)
 		ports/unix/main.c
 	)
 	target_compile_definitions(crossforth PUBLIC
+		HAVE_MEMORY_WORDS
 		HAVE_STDC_WORDS
 	)
 	target_include_directories(crossforth PUBLIC
@@ -73,6 +74,7 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Linux)
 	)
 
 	target_compile_definitions(redforth PUBLIC
+		HAVE_MEMORY_WORDS
 		HAVE_STDC_WORDS
 		HAVE_CORE_WORDS
 		HAVE_DEBUG_WORDS
@@ -133,6 +135,7 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL PICO)
 	)
 
 	target_compile_definitions(redforth PUBLIC
+		HAVE_MEMORY_WORDS
 		HAVE_STDC_WORDS
 		HAVE_RP2_WORDS
 		HAVE_CORE_WORDS

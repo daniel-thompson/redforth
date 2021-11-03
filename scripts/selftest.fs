@@ -425,10 +425,10 @@ FORGET INPUT_FILE
 OK
 
 ." Memory allocation ..."
-32 MALLOC DUP 0<> ASSERT
+32 ALLOCATE 0= ASSERT
 \ This is a crass "does it crash test"
 DUP 31 + 31 SWAP C!
-FREE
+FREE 0= ASSERT
 OK
 
 
