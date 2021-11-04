@@ -44,10 +44,10 @@ Build for Raspberry Pi Pico
 Try:
 
 ~~~
-git clone https://github.com/raspberrypi/pico-sdk
-(cd pico-sdk; git submodule update --init)
+git submodule update --init
+(cd ports/rp2/pico-sdk; git submodule update --init)
 cmake -B build-rp2/ \
-	-DPICO_SDK_PATH=$PWD/pico-sdk \
+	-DPICO_SDK_PATH=$PWD/ports/rp2/pico-sdk \
 	-DREDFORTH_TOOLS_DIR=$PWD/build
 make -C build-rp2/ -j `nproc`
 ~~~

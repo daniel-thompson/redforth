@@ -1,3 +1,6 @@
 [submodule "ports/rp2/littlefs"]
 	path = ports/rp2/littlefs
 	url = https://github.com/littlefs-project/littlefs
+[submodule "ports/rp2/pico-sdk"]
+	path = ports/rp2/pico-sdk
+	url = https://github.com/raspberrypi/pico-sdk
