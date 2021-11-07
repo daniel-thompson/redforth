@@ -64,6 +64,7 @@ struct forth_task {
 };
 
 extern struct header *var_LATEST;
+extern cell_t var_SOURCE_ID;
 extern uintptr_t var_LINENO;
 
 void rf_forth_exec(struct forth_task *ctx);

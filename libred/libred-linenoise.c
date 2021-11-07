@@ -13,7 +13,7 @@
 
 static char buf[1025];
 
-static int fd_in = STDIN_FILENO;
+cell_t var_SOURCE_ID = (cell_t) { .n = STDIN_FILENO };
 static int fd_out = STDOUT_FILENO;
 
 static char *line;
@@ -41,11 +41,11 @@ char do_KEY(void)
 		return ch;
 	}
 	
-	if (!isatty(fd_in)) {
-		ssize_t n = read(fd_in, buf, 1024);
+	if (!isatty(var_SOURCE_ID.n)) {
+		ssize_t n = read(var_SOURCE_ID.n, buf, 1024);
 		if (n == 0) { // EOF
-			if (fd_in != STDIN_FILENO) {
-				fd_in = STDIN_FILENO;
+			if (var_SOURCE_ID.n != STDIN_FILENO) {
+				var_SOURCE_ID.n = STDIN_FILENO;
 				return do_KEY();
 			}
 
@@ -80,10 +80,10 @@ void do_TYPE(const char *s, size_t len)
 
 void do_INCLUDE(char *fname)
 {
-	if (fd_in > STDIN_FILENO)
-		close(fd_in);
+	if (var_SOURCE_ID.n > STDIN_FILENO)
+		close(var_SOURCE_ID.n);
 
-	fd_in = open(fname, O_RDONLY);
+	var_SOURCE_ID.n = open(fname, O_RDONLY);
 	var_LINENO = 0;
 }
 

@@ -11,20 +11,20 @@
 #include <stdlib.h>
 #include <string.h>
 
-static FILE *rf_in = NULL;
+cell_t var_SOURCE_ID = (cell_t) { .p = NULL };
 static FILE *rf_out = NULL;
 
 char do_KEY(void)
 {
-	if (!rf_in)
-		rf_in = stdin;
+	if (!var_SOURCE_ID.p)
+		var_SOURCE_ID.p = stdin;
 
-	int ch = fgetc(rf_in);
+	int ch = fgetc(var_SOURCE_ID.p);
 	if (ch == EOF) {
-		if (rf_in == stdin) {
+		if (var_SOURCE_ID.p == stdin) {
 			exit(0);
 		} else {
-			rf_in = stdin;
+			var_SOURCE_ID.p = stdin;
 			return do_KEY();
 		}
 	}
@@ -50,10 +50,10 @@ void do_TYPE(const char *s, size_t len)
 
 void do_INCLUDE(char *fname)
 {
-	if (rf_in && rf_in != stdin)
-		fclose(rf_in);
+	if (var_SOURCE_ID.p && var_SOURCE_ID.p != stdin)
+		fclose(var_SOURCE_ID.p);
 
-	rf_in = fopen(fname, "r");
+	var_SOURCE_ID.p = fopen(fname, "r");
 	var_LINENO = 0;
 }
 

@@ -371,6 +371,10 @@ VARIABLE("BASE", BASE)
 #undef  LINK
 #define LINK BASE
 
+VARIABLE("SOURCE-ID", SOURCE_ID)
+#undef  LINK
+#define LINK SOURCE_ID
+
 /*
  * BUILT-IN CONSTANTS  ------------------------------------------------------
  */

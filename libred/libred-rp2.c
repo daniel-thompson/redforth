@@ -13,11 +13,15 @@
 #include <pico/bootrom.h>
 
 #include "linenoise.h"
+#include "littlefs.h"
+
+cell_t var_SOURCE_ID = (cell_t) { .p = NULL };
 
 static char *line;
 static const char *pending_input;
 static const char newline[] = "\n";
 static char pending_char = 0;
+
 
 int linenoiseGetChar()
 {
@@ -44,6 +48,15 @@ void linenoiseWrite(const char *s, unsigned int len)
 char do_KEY(void)
 {
 	char ch;
+
+	if (var_SOURCE_ID.p) {
+		int res = lfs_file_read(&rp2_littlefs, var_SOURCE_ID.p, &ch, 1);
+		if (res == 1)
+			return ch;
+		(void) lfs_file_close(&rp2_littlefs, var_SOURCE_ID.p);
+		free(var_SOURCE_ID.p);
+		var_SOURCE_ID.p = NULL;
+	}
 
 	if (pending_input) {
 		ch = *pending_input++;
