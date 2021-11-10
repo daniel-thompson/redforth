@@ -117,6 +117,7 @@ NATIVE(ADD, "+") /* ( a b -- a+b )) */
 	NEXT();
 #undef  LINK
 #define LINK ADD
+
 NATIVE(SUB, "-") /* ( a b -- b-a ) */
 #undef  LINK
 #define LINK SUB
@@ -143,6 +144,32 @@ NATIVE(DIVMOD, "/MOD") /* ( a b -- a%b a/b ) */
 	dsp[1].n = a.n % b.n;
 	dsp[0].n = a.n / b.n;
 	NEXT();
+
+QNATIVE(LSHIFT) /* ( a b -- a << b ) */
+#undef  LINK
+#define LINK LSHIFT
+	tmp = POP();
+	dsp[0].u <<= tmp.u;
+	NEXT();
+
+QNATIVE(RSHIFT) /* ( a b -- a >> b ) */
+#undef  LINK
+#define LINK RSHIFT
+	tmp = POP();
+	dsp[0].u >>= tmp.u;
+	NEXT();
+
+QNATIVE(SX32) /* ( a -- b ) */
+#undef  LINK
+#define LINK SX32
+	/*
+	 * This naturally will become a nop on 32-bit platforms... but on
+	 * 64-bit platforms it will sign-extend a 32-bit value (which we usually
+	 * get from a CCALLx)
+	 */
+	dsp[0].n = (int64_t) (int) dsp[0].n;
+	NEXT();
+
 
 /*
  * COMPARISON OPERATIONS  ---------------------------------------------------

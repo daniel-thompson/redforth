@@ -16,6 +16,13 @@
 #include "littlefs.h"
 #endif
 
+#ifdef HAVE_UNIX_WORDS
+#include <fcntl.h>
+#include <unistd.h>
+
+int help = O_RDONLY;
+#endif
+
 #define PUSH(p) do { dsp[-1] = (p); dsp--; } while(0)
 #define POP() (*dsp++)
 #define PUSHRSP(p) do { rsp[-1] = (p); rsp--; } while(0)
@@ -183,6 +190,9 @@ DOCOL:
 #ifdef HAVE_RP2_WORDS
 #include "rp2-words.h"
 #endif
+#ifdef HAVE_UNIX_WORDS
+#include "unix-words.h"
+#endif
 #ifdef HAVE_CORE_WORDS
 #include "core-words.h"
 #endif
@@ -194,6 +204,9 @@ DOCOL:
 #endif
 #ifdef HAVE_RP2_FILE_WORDS
 #include "rp2-file-words.h"
+#endif
+#ifdef HAVE_UNIX_FILE_WORDS
+#include "unix-file-words.h"
 #endif
 #ifdef HAVE_TOOLS_WORDS
 #include "tools-words.h"

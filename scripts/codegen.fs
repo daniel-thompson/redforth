@@ -49,7 +49,7 @@ LIST>ROM
 
 ( Generate Raspberry Pi RP2 words.
 
-  First we must define some of the RP2 native words otherwise there will be
+  First we must define some of the RP2 native words otherwise they will be
   missing words in the forth code!
 )
 : LFS ;
@@ -79,3 +79,34 @@ LIST>ROM
 
 ( Forget all the RP2 words! )
 FORGET LFS
+
+( Generate Unix words.
+
+  First we must define some of the Unix native words otherwise they will be
+  missing words in the forth code!
+)
+: O_RDONLY 1 ;
+: O_WRONLY 2 ;
+: O_RDWR 3 ;
+: O_CREAT 256 ;
+: O_EXCL 512 ;
+: O_TRUNC 1024 ;
+: O_APPEND 2048 ;
+: FN-open ;
+: FN-close ;
+: FN-read ;
+: FN-write ;
+
+LATEST @
+INCLUDE unix-file-words.fs
+LATEST @
+
+EXUDE unix-file-words.h
+." // Auto-generated from unix-file-words.fs" CR
+." #ifndef RF_UNIX_FILE_WORDS_H_" CR
+." #define RF_UNIX_FILE_WORDS_H_" CR
+LIST>ROM
+." #endif /* RF_UNIX_FILE_WORDS_H_*/" CR
+
+( Forget all the Unix words! )
+FORGET O_RDONLY

@@ -23,6 +23,7 @@ set(FORTH_WORDS
 	debug-words.h
 	file-words.h
 	rp2-file-words.h
+	unix-file-words.h
 	tools-words.h
 )
 file(GLOB FORTH_SOURCES words/*.fs)
@@ -75,10 +76,10 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Linux)
 
 	target_compile_definitions(redforth PUBLIC
 		HAVE_MEMORY_WORDS
-		HAVE_STDC_WORDS
+		HAVE_UNIX_WORDS
 		HAVE_CORE_WORDS
 		HAVE_DEBUG_WORDS
-		HAVE_FILE_WORDS
+		HAVE_UNIX_FILE_WORDS
 		HAVE_TOOLS_WORDS
 		HAVE_ISATTY
 		HAVE_TERMIOS
@@ -105,12 +106,12 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Linux)
 	)
 	add_test(
 		NAME selftest
-		COMMAND sh -c "$<TARGET_FILE:redforth> \
+		COMMAND sh -c "${QEMU_USER} $<TARGET_FILE:redforth> \
 			< ${CMAKE_SOURCE_DIR}/scripts/selftest.fs"
 	)
 	add_test(
 		NAME eyeball
-		COMMAND sh -c "$<TARGET_FILE:redforth> \
+		COMMAND sh -c "${QEMU_USER} $<TARGET_FILE:redforth> \
 			< ${CMAKE_SOURCE_DIR}/scripts/eyeball.fs \
 			| uniq -u > eyeball.log \
 		&& \
