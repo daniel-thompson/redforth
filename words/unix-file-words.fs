@@ -3,18 +3,19 @@
 : R/O O_RDONLY ;
 : W/O O_WRONLY O_CREAT OR ;
 
-: (OPEN-FILE)   ( addr u mode -- fileid ior)
+: (OPEN-FILE)   ( addr u flags -- fileid ior)
 	-ROT CSTRING
-        FN-open CCALL2 SX32
+	511 -ROT		( a.k.a. 0777 )
+        FN-open CCALL3 SX32
 	DUP 0<
         ;
 
-: CREATE-FILE   ( addr u mode -- fileid ior )
+: CREATE-FILE   ( addr u flags -- fileid ior )
         O_TRUNC OR
         (OPEN-FILE)
         ;
 
-: OPEN-FILE     ( addr u mode -- filed ior )
+: OPEN-FILE     ( addr u flags -- filed ior )
         O_APPEND OR
         (OPEN-FILE)
         ;
