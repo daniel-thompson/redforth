@@ -95,6 +95,7 @@ FORGET LFS
 : FN-open ;
 : FN-close ;
 : FN-read ;
+: FN-unlink ;
 : FN-write ;
 
 LATEST @

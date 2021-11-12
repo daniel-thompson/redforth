@@ -42,6 +42,11 @@
         THEN
         ;
 
+: DELETE-FILE	( c-addr u -- ior )
+	CSTRING
+	FN-unlink CCALL1 SX32
+	;
+
 : INCLUDE	( -- )
 	WORD R/O OPEN-FILE
 	0= IF

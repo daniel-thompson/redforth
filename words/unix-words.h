@@ -37,6 +37,10 @@ EXPORT_FUNCTION(read)
 #undef  LINK
 #define LINK FN_read
 
+EXPORT_FUNCTION(unlink)
+#undef	LINK
+#define	LINK FN_unlink
+
 EXPORT_FUNCTION(write)
 #undef  LINK
 #define LINK FN_write

@@ -423,6 +423,11 @@ HERE @ 6 + C@ CHAR 4 = ASSERT
 INPUT_FILE @ CLOSE-FILE 0= ASSERT
 FORGET INPUT_FILE
 
+[DEFINED] DELETE-FILE [IF]
+S" filetest.txt" DELETE-FILE 0= ASSERT
+S" filetest.txt" DELETE-FILE 0<> ASSERT
+[THEN]
+
 OK
 
 ." Memory allocation ..."
