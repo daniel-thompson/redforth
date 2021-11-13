@@ -293,6 +293,30 @@ T{ F_HIDDEN DUP 1- AND -> 0 }T
 T{ F_LENMASK 0<> -> TRUE }T
 OK
 
+( --------------------------------------------------------------------------- )
+." String literals "
+: CH DUP C@ SWAP 1+ ;
+: XSTR -ROT SWAP ROT 0 DO CH LOOP DROP ;
+: COMPSTR S" 123" ;
+: COMPSTR\ S\" \1\2\3" ;
+T{ S" A" 1 XSTR -> 1 CHAR A }T
+T{ S" ABC" 3 XSTR -> 3 CHAR A CHAR B CHAR C }T
+T{ S\" \"qu\"" 4 XSTR -> 4 CHAR " CHAR q CHAR u CHAR " }T
+T{ S\"  \" " 3 XSTR -> 3 BL CHAR " BL }T
+T{ S\" \a\b\e\f\l\q\r\t\v\z" 10 XSTR -> 10 7 8 27 12 10 34 13 9 11 0 }T
+T{ S\" \\\"\!" 3 XSTR -> 3 CHAR \ CHAR " CHAR ! }T
+T{ COMPSTR  3 XSTR -> 3 CHAR 1 CHAR 2 CHAR 3 }T
+T{ COMPSTR\ 3 XSTR -> 3 CHAR 1 CHAR 2 CHAR 3 }T
+
+( Check that immediate string literals use the same memory location )
+T{ S" 123" -> S\" AB\C" }T
+
+( Check that compiled string literals use a different mechanism to
+  immediate string literals and from each other. )
+T{ S" 123" DROP COMPSTR DROP <> -> TRUE }T
+T{ COMPSTR DROP COMPSTR\ DROP <> -> TRUE }T
+FORGET CH
+OK
 
 ( --------------------------------------------------------------------------- )
 ." Return stack manipulation "

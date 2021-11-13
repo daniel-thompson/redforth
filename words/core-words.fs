@@ -335,8 +335,9 @@
 		DUP DSP@ CELL+ CELL+ >
 	WHILE
 		CELL-
-		DUP @ RAWUDOT
-		SPACE
+		DUP @
+		\ RAWUDOT SPACE
+		RAWDOT
 	REPEAT
 	DROP
 ;
@@ -874,6 +875,80 @@
 	WHILE
 		[COMPILE] THEN
 	REPEAT
+;
+
+( Quoted strings
+
+  S\" allows us to encode special items (such as double quotes) that cannot
+  be handled with a regular S"
+)
+
+: \DQUOTE	( -- '"' << 8 )
+	[ CHAR " 8 LSHIFT ] LITERAL
+	;
+
+: \KEY		( -- ch )
+	KEY
+	DUP [CHAR] \ = IF
+		DROP
+		KEY
+		DUP CASE
+		[CHAR] a OF DROP 7 ENDOF
+		[CHAR] b OF DROP 8 ENDOF
+		[CHAR] e OF DROP 27 ENDOF
+		[CHAR] f OF DROP 12 ENDOF
+		[CHAR] l OF DROP 10 ENDOF
+		[CHAR] m OF DROP 3338 ENDOF ( 3338 is 13 << 8 + 10, a.k.a CR/LF )
+		[CHAR] n OF DROP 10 ENDOF
+		[CHAR] q OF DROP [CHAR] " ENDOF
+		[CHAR] r OF DROP 13 ENDOF
+		[CHAR] t OF DROP 9 ENDOF
+		[CHAR] v OF DROP 11 ENDOF
+		[CHAR] z OF DROP 0 ENDOF
+		( \x<hexdigit><hexdight> is not implemented )
+		( default case covers \\, \" and friends by doing nothing )
+		ENDCASE
+	ELSE
+		DUP [CHAR] " = IF
+			( " must be different to \" because the former ends
+			  the string )
+			DROP \DQUOTE
+		THEN
+	THEN
+
+	;
+
+: S\" IMMEDIATE		( -- addr len )
+	STATE @ IF	( compiling? )
+		' LITSTRING ,	( compile LITSTRING )
+		HERE @		( save the address of the length word on the stack )
+		0 ,		( dummy length - we don't know what it is yet )
+		BEGIN
+			\KEY 		( get next character of the string )
+			DUP \DQUOTE <>
+		WHILE
+			C,		( copy character )
+		REPEAT
+		DROP		( drop the double quote character at the end )
+		DUP		( get the saved address of the length word )
+		HERE @ SWAP -	( calculate the length )
+		CELL-		( subtract 4 (because we measured from the start of the length word) )
+		SWAP !		( and back-fill the length location )
+		ALIGN		( round up to next multiple of 4 bytes for the remaining code )
+	ELSE		( immediate mode )
+		HERE @		( get the start address of the temporary space )
+		BEGIN
+			\KEY
+			DUP \DQUOTE <>
+		WHILE
+			OVER C!		( save next character )
+			1+		( increment address )
+		REPEAT
+		DROP		( drop the final " character )
+		HERE @ -	( calculate the length )
+		HERE @		( push the start address )
+		SWAP 		( addr len )
+	THEN
 ;
 
 (
