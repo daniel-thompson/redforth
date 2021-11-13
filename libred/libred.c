@@ -29,13 +29,24 @@ uint8_t *to_flags(struct header *l)
 	return cf - 1;
 }
 
-struct header *do_FIND(const char *s, size_t n)
+static int strncmp_toupper(const char *s1, const char *s2, size_t n)
 {
-	struct header *node = var_LATEST;
+	while (n--) {
+		int d = *s1++ - toupper(*s2++);
+		if (d)
+			return d;
+	}
+
+	return 0;
+}
+
+static struct header *inner_FIND(const char *s, size_t n,
+			  int (*cmp)(const char *s1, const char *s2, size_t n))
+{	struct header *node = var_LATEST;
 
 	while (node) {
 		char *name = (char *) (node + 1);
-		if (0 == strncmp(name, s, n) && name[n] == '\0') {
+		if (0 == cmp(name, s, n) && name[n] == '\0') {
 			uint8_t *flags = to_flags(node);
 			if (!(*flags & F_HIDDEN))
 				return node;
@@ -44,6 +55,31 @@ struct header *do_FIND(const char *s, size_t n)
 	}
 
 	return NULL;
+}
+
+/*
+ * Look up a word in the dictionary.
+ *
+ * redforth is not entirely case-insensitive but it does do a little trick
+ * so that THE USER DOESN'T HAVE TO HOLD THE SHIFT KEY DOWN ALL THE TIME.
+ *
+ * First we try to find a word using a case-sensitive search. If this does
+ * not work then we will upper case what the user typed and try again.
+ *
+ * In other words:
+ *
+ *   `DROP`       will find    `DROP`
+ *   `drop`       will find    `DROP`
+ *   `FN-Exit` will *not* find `FN-exit`
+ */
+struct header *do_FIND(const char *s, size_t n)
+{
+	struct header *node = inner_FIND(s, n, strncmp);
+	if (node)
+		return node;
+
+	return inner_FIND(s, n, strncmp_toupper);
+
 }
 
 uintptr_t do_NUMBER(char *cp, uintptr_t len, int base, char **endptr)
