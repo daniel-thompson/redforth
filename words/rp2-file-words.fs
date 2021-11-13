@@ -60,3 +60,10 @@
                 DROP 0
         THEN
         ;
+
+: INCLUDE	( -- )
+	WORD R/O OPEN-FILE
+	0= IF
+		SOURCE-ID !
+	THEN
+	;
