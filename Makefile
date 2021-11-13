@@ -8,6 +8,10 @@
 ifndef NO_ARMV7
 CROSS_COMPILE ?= arm-linux-musleabihf-
 PORTS += armv7
+# Automatically run with qemu-arm if it is available
+ifneq ($(shell command -v qemu-arm),)
+QEMU_USER_ARMV7 = -DQEMU_USER=qemu-arm
+endif
 endif
 
 ifndef NO_RPI_RP2
@@ -27,7 +31,8 @@ armv7 : native
 	cmake -B build-$@ \
 		-DCMAKE_TOOLCHAIN_FILE=scripts/musl-cross.cmake \
 		-DCROSS_COMPILE=$(CROSS_COMPILE) \
-		-DREDFORTH_TOOLS_DIR=$(PWD)/build
+		-DREDFORTH_TOOLS_DIR=$(PWD)/build \
+		$(QEMU_USER_ARMV7)
 	$(MAKE) -C build-$@/
 
 submodules :
