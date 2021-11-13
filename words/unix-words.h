@@ -45,7 +45,7 @@ EXPORT_FUNCTION(write)
 #undef  LINK
 #define LINK FN_write
 
-CONSTANT("FN-exit", FN_exit, (uintptr_t) &exit)
+EXPORT_FUNCTION(exit)
 #undef  LINK
 #define LINK FN_exit
 

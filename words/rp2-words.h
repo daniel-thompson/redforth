@@ -61,6 +61,10 @@ EXPORT_FUNCTION(lfs_file_write)
 #undef  LINK
 #define LINK FN_lfs_file_write
 
+EXPORT_FUNCTION(exit)
+#undef  LINK
+#define LINK FN_exit
+
 QNATIVE(REBOOT)
 #undef  LINK
 #define LINK REBOOT
