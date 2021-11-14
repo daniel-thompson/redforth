@@ -79,11 +79,6 @@ VARIABLE ERROR_COUNT
 ( OK prints ok to the terminal to demonstrate test progress )
 : OK ."  ok" CR ;
 
-
-( Hello, good evening and welcome! )
-CR CR
-
-
 ( --------------------------------------------------------------------------- )
 ." Test suite self tests "
 
