@@ -14,8 +14,8 @@
 int main(int argc, const char *argv[])
 {
 	/*
-	 * On Unix platforms there is no real need to minimise RAM usage since
-	 * this will all be allocated-on-write anyway!
+	 * On Unix platforms there is no real need to minimise RAM usage
+	 * since this will all be allocated-on-write anyway!
 	 */
 	uintptr_t stack[4096];
 	uintptr_t rstack[4096];
@@ -26,6 +26,19 @@ int main(int argc, const char *argv[])
 		.rsp = rstack + 4096,
 		.here = (uintptr_t *) here,
 	};
+
+	if (argc > 1) {
+		unsigned int len = 1;
+		for (int i = 1; i < argc; i++)
+			len += strlen(argv[i]) + 1;
+
+		task.input = here + sizeof(here) - len;
+		*task.input = '\0';
+		for (int i = 1; i < argc; i++) {
+			strcat(task.input, argv[i]);
+			strcat(task.input, " ");
+		}
+	}
 
 	rf_forth_exec(&task);
 	printf(" unexpected VM exit\n");

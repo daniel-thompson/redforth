@@ -14,12 +14,28 @@
 cell_t var_SOURCE_ID = (cell_t) { .p = NULL };
 static FILE *rf_out = NULL;
 
+static const char *pending_input;
+
+void do_QUEUE(const char *input)
+{
+	pending_input = input;
+}
+
 char do_KEY(void)
 {
+	int ch;
+
+	if (pending_input) {
+		ch = *pending_input++;
+		if (*pending_input == '\0')
+			pending_input = NULL;
+		return ch;
+	}
+
 	if (!var_SOURCE_ID.p)
 		var_SOURCE_ID.p = stdin;
 
-	int ch = fgetc(var_SOURCE_ID.p);
+	ch = fgetc(var_SOURCE_ID.p);
 	if (ch == EOF) {
 		if (var_SOURCE_ID.p == stdin) {
 			exit(0);

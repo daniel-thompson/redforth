@@ -20,6 +20,11 @@ static char *line;
 static const char *pending_input;
 static const char newline[] = "\n";
 
+void do_QUEUE(const char *input)
+{
+	pending_input = input;
+}
+
 char do_KEY(void)
 {
 	char ch;

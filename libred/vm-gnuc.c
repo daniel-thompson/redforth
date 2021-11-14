@@ -218,6 +218,9 @@ start:
 		const_BUILTIN_WORDS = PREVIOUS;
 	}
 
+	if (ctx->input)
+		do_QUEUE(ctx->input);
+
 	if (!ip) {
 		/* Exit Forth if we run out of words */
 		void **halt = (void **) (&word_PAUSE.cf.codeword);

@@ -42,6 +42,7 @@ struct codefield {
 struct codefield *to_CFA(struct header *l);
 uint8_t *to_flags(struct header *l);
 struct header *do_FIND(const char *s, size_t n);
+void do_QUEUE(const char *input);
 char do_KEY(void);
 void do_EMIT(char ch);
 void do_TYPE(const char *s, size_t len);
@@ -59,6 +60,8 @@ struct forth_task {
 	uintptr_t *dsp;
 	uintptr_t *rsp;
 	uintptr_t *here;
+
+	char *input;
 
 	uintptr_t *ip;
 };

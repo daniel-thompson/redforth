@@ -45,6 +45,11 @@ void linenoiseWrite(const char *s, unsigned int len)
 	fflush(stdout);
 }
 
+void do_QUEUE(const char *input)
+{
+	pending_input = input;
+}
+
 char do_KEY(void)
 {
 	char ch;
