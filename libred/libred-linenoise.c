@@ -12,6 +12,7 @@
 #include "linenoise.h"
 
 static char buf[1025];
+static const char *file_input;
 
 cell_t var_SOURCE_ID = (cell_t) { .n = STDIN_FILENO };
 static int fd_out = STDOUT_FILENO;
@@ -29,20 +30,10 @@ char do_KEY(void)
 {
 	char ch;
 
-	if (pending_input) {
-		ch = *pending_input++;
-		if (*pending_input == '\0') {
-			pending_input = NULL;
-			if (line) {
-				free(line);
-				line = NULL;
-				/* queue a newline... linenoise doesn't
-				 * do that and we need the separator to
-				 * complete the word
-				 */
-				pending_input = newline;
-			}
-		}
+	if (file_input) {
+		ch = *file_input++;
+		if (*file_input == '\0')
+			file_input = NULL;
 		return ch;
 	}
 	
@@ -58,8 +49,25 @@ char do_KEY(void)
 		}
 
 		buf[n] = '\0';
-		pending_input = buf;
+		file_input = buf;
 		return do_KEY();
+	}
+
+	if (pending_input) {
+		ch = *pending_input++;
+		if (*pending_input == '\0') {
+			pending_input = NULL;
+			if (line) {
+				free(line);
+				line = NULL;
+				/* queue a newline... linenoise doesn't
+				 * do that and we need the separator to
+				 * complete the word
+				 */
+				pending_input = newline;
+			}
+		}
+		return ch;
 	}
 
 	do {
