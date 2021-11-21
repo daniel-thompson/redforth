@@ -28,9 +28,9 @@
         -ROT SWAP ROT
 	FN-read CCALL3
         DUP 0< IF
-                0 SWAP
+		0 SWAP	( returned an error, zero bytes read )
         ELSE
-                0
+		0	( success, but u2 could be zero if EOF )
         THEN
         ;
 
@@ -62,9 +62,12 @@
 		SWAP DROP	( fileid u1 u2 c-addr ior )
 		>R -ROT R>	( fileid c-addr u1 u2 ior )
 	ELSE
-		2DROP		( fileid u1 u2 c-addr )
+		DROP 0 = IF	( fileid u1 u2 c-addr )
+			-ROT 0
+			EXIT
+		THEN
 		1+ -ROT 1+	( fileid c-addr+1 u1 u2+1 )
-		0		( fileid c-addr u1 u2 ior )
+		1		( fileid c-addr u1 u2 ior )
 	THEN
 	;
 
@@ -81,7 +84,7 @@
 : READ-LINE	( c-addr u1 fileid -- u2 flag ior )
 	-ROT 0		( fileid c-addr u1 0 )
 	BEGIN
-		READ-LINE-KEY DUP 0=
+		READ-LINE-KEY DUP 1 =
 	WHILE		( fileid c-addr u1 u2 ior )
 		DROP		( fileid c-addr u1 u2 )
 		READ-LINE-LF?
@@ -95,6 +98,11 @@
 			EXIT
 		THEN
 	REPEAT		( fileid c-addr u1 u2 ior )
+	( READ-LINE-KEY TOS is 0 at EOF, 1 otherwise )
+	DUP 0 > IF
+		DROP
+		0
+	THEN
 	>R
 	-ROT 2DROP	( fileid u2 )
 	SWAP DROP	( u2 )
