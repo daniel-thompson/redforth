@@ -49,4 +49,22 @@ EXPORT_FUNCTION(exit)
 #undef  LINK
 #define LINK FN_exit
 
+QNATIVE(ARG)	/* ( u -- addr count ) */
+#undef  LINK
+#define LINK ARG
+	/* Behaves the same as the gforth word of the same name */
+	uintptr_t u = POP().u;
+	if (u >= sys_argc) {
+		PUSH((cell_t) { .u = 0 });
+		PUSH((cell_t) { .u = 0 });
+	} else {
+		PUSH((cell_t) { .p = (void *) sys_argv[u] });
+		PUSH((cell_t) { .u = strlen(sys_argv[u]) });
+	}
+	NEXT();
+
+CONSTANT("ARGC", ARGC, (uintptr_t) &sys_argc)
+#undef  LINK
+#define LINK ARGC
+
 #endif /* RF_UNIX_WORDS_H_ */

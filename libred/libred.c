@@ -141,6 +141,17 @@ char *do_WORD(void)
 	/* Terminate word */
 	*--p = '\0';
 
+#ifdef HAVE_UNIX_WORDS
+	/* Special handling for #! based scripts */
+	if (var_LINENO == 0 && buf[0] == '#' && buf[1] == '!') {
+		do {
+			ch = do_KEY();
+		} while (ch != '\n');
+		var_LINENO++;
+		return do_WORD();
+	}
+#endif
+
 	/* Did the word end with a newline? */
 	if (ch == '\n')
 		var_LINENO++;

@@ -83,6 +83,12 @@ void rf_forth_exec(struct forth_task *ctx);
 #define GLUE2(x, y) x ## y
 #define GLUE(x, y) GLUE2(x, y)
 
+/*
+ * Needed for unix-words.h  -------------------------------------------------
+ */
+
+extern uintptr_t sys_argc;
+extern const char **sys_argv;
 
 
 #endif /* RF_LIBRED_H_ */
