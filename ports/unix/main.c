@@ -31,7 +31,7 @@ static void run_as_script(struct forth_task *task, const char *fname)
 	/* strcat() is slower than explicit memcpy(), but less error prone! */
 	strcat(task->input, "INCLUDE ");
 	strcat(task->input, fname);
-	strcat(task->input, " BYE ");
+	strcat(task->input, " [DEFINED] MAIN [IF] MAIN [THEN] BYE ");
 }
 
 int main(int argc, const char *argv[])
