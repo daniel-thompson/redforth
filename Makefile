@@ -52,6 +52,9 @@ rp2-install : rp2
 	    cp build-rp2/redforth.uf2 /media/$(USER)/RPI-RP2; \
 	fi
 
+rp2-interact :
+	picocom --send-cmd ./scripts/encode.fs /dev/ttyACM0
+
 test : all
 	$(MAKE) -C build/ test
 	$(MAKE) -C build-armv7/ test
