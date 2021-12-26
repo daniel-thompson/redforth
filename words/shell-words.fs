@@ -13,12 +13,13 @@
 	ROT AND		( ... u good? )
 	;
 
-: CAT-FILEID	( fileid -- )
+: CAT-FILEID	( fileid -- fileid )
 	BEGIN
 		HERE @ 1024 2 PICK READ-LINE
 	MORE-LINES? WHILE
 		HERE @ SWAP TYPE
 	REPEAT
+	DROP
 	;
 
 : CAT-FILE	( addr c -- )
@@ -28,6 +29,7 @@
 		EXIT
 	THEN DROP
 	CAT-FILEID
+	CLOSE-FILE DROP
 	;
 
 : CAT		( -- )
