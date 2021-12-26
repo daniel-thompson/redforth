@@ -98,9 +98,23 @@ FORGET LFS
 : FN-unlink ;
 : FN-write ;
 
+( the XXX-file-words.fs family of libraries redefine INCLUDE and we don't want
+  to use the new definition during codegen so we must provide an alternative
+)
+: #INCLUDE INCLUDE ;
+
 LATEST @
-INCLUDE unix-file-words.fs
+#INCLUDE unix-file-words.fs
 LATEST @
+#INCLUDE shell-words.fs
+LATEST @
+
+EXUDE shell-words.h
+." // Auto-generated from shell-words.fs" CR
+." #ifndef RF_SHELL_WORDS_H_" CR
+." #define RF_SHELL_WORDS_H_" CR
+2DUP LIST>ROM DROP
+." #endif /* RF_SHELL_WORDS_H_*/" CR
 
 EXUDE unix-file-words.h
 ." // Auto-generated from unix-file-words.fs" CR
