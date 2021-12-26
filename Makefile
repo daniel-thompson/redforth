@@ -46,7 +46,11 @@ rp2 : native submodules
 	$(MAKE) -C build-$@/
 
 rp2-install : rp2
-	cp build-rp2/redforth.uf2 /media/$(USER)/RPI-RP2
+	if [ -d /var/run/media/$(USER)/RPI-RP2 ]; then \
+	    cp build-rp2/redforth.uf2 /var/run/media/$(USER)/RPI-RP2; \
+	else \
+	    cp build-rp2/redforth.uf2 /media/$(USER)/RPI-RP2; \
+	fi
 
 test : all
 	$(MAKE) -C build/ test
