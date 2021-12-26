@@ -75,7 +75,7 @@
 	( header )
 	S\" S\" " TYPE
 	2DUP TYPE
-	S\" \" W/O CREATE-FILE DROP\n" TYPE
+	S\" \" W/O CREATE-FILE DROP\r\n" TYPE
 
 
 	( open file )
@@ -98,11 +98,11 @@
 		-ROT 2 PICK	( c-addr2 c-addr1 u1 c-addr2 )
 		S\" S\\\" " TYPE
 		ENCODE-STRING TYPE
-		S\" \" 2 PICK WRITE-FILE DROP\n" TYPE
+		S\" \" 2 PICK WRITE-FILE DROP\r\n" TYPE
 	REPEAT
 
 	( footer )
-	S\" CLOSE-FILE DROP\n" TYPE
+	S\" CLOSE-FILE DROP\r\n" TYPE
 	;
 
 : ENCODE
