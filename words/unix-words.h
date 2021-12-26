@@ -49,6 +49,22 @@ EXPORT_FUNCTION(exit)
 #undef  LINK
 #define LINK FN_exit
 
+EXPORT_FUNCTION(opendir)
+#undef  LINK
+#define LINK FN_opendir
+
+EXPORT_FUNCTION(closedir)
+#undef  LINK
+#define LINK FN_closedir
+
+EXPORT_FUNCTION(readdir)
+#undef  LINK
+#define LINK FN_readdir
+
+CONSTANT("dirent-d_name", DIRENT_D_NAME, offsetof(struct dirent, d_name))
+#undef  LINK
+#define LINK DIRENT_D_NAME
+
 QNATIVE(ARG)	/* ( u -- addr count ) */
 #undef  LINK
 #define LINK ARG

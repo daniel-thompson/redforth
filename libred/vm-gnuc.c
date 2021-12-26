@@ -17,6 +17,7 @@
 #endif
 
 #ifdef HAVE_UNIX_WORDS
+#include <dirent.h>
 #include <fcntl.h>
 #include <unistd.h>
 

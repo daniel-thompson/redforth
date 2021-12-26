@@ -61,6 +61,46 @@
         THEN
         ;
 
+: NEW-DIRID ( -- dirid )
+	LFS_DIR_SIZE LFS_INFO_SIZE + ALLOCATE
+	0<> IF ABORT THEN
+	;
+
+: DELETE-DIRID ( dirid -- )
+        FREE DROP
+        ;
+
+: OPEN-DIR	( addr u -- dirp ior)
+	CSTRING			( str )
+	NEW-DIRID		( str dirp )
+	DUP -ROT		( dirp str dirp )
+	LFS FN-lfs_dir_open CCALL3	( dirp ior )
+	DUP IF
+		( this is an error so whatever FREE puts into the dirp is fine )
+		SWAP FREE SWAP	( NULL ior )
+	THEN
+	;
+
+: CLOSE-DIR	( dirp -- ior )
+        DUP				( dirp dirp )
+        LFS FN-lfs_dir_close CCALL2	( dirp ior )
+        SWAP OVER 0= IF			( ior fileid )
+                FREE			( ior fior )
+	THEN
+	DROP				( ior )
+        ;
+
+: READ-DIR	( dirp -- c-addr u )
+	DUP LFS_DIR_SIZE +	( dirp infop )
+	DUP ROT			( infop infop dirp )
+	LFS FN-lfs_dir_read CCALL3	( ior )
+	0<= IF
+		DROP 0 0 EXIT ( can't enumerate any more )
+	THEN			( infop )
+	LFS_INFO_NAME +		( find the name field )
+	DUP STRLEN		( convert C-string to Forth string )
+	;
+
 : INCLUDE	( -- )
 	WORD R/O OPEN-FILE
 	0= IF

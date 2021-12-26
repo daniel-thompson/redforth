@@ -53,6 +53,9 @@ LIST>ROM
   missing words in the forth code!
 )
 : LFS ;
+: LFS_INFO_SIZE ;
+: LFS_INFO_NAME ;
+: LFS_DIR_SIZE ;
 : LFS_FILE_SIZE ;
 : LFS_O_RDONLY 1 ;
 : LFS_O_WRONLY 2 ;
@@ -65,6 +68,9 @@ LIST>ROM
 : FN-lfs_file_close ;
 : FN-lfs_file_read ;
 : FN-lfs_file_write ;
+: FN-lfs_dir_open ;
+: FN-lfs_dir_close ;
+: FN-lfs_dir_read ;
 
 LATEST @
 INCLUDE rp2-file-words.fs
@@ -97,6 +103,10 @@ FORGET LFS
 : FN-read ;
 : FN-unlink ;
 : FN-write ;
+: FN-opendir ;
+: FN-closedir ;
+: FN-readdir ;
+: DIRENT_D_NAME ;
 
 ( the XXX-file-words.fs family of libraries redefine INCLUDE and we don't want
   to use the new definition during codegen so we must provide an alternative

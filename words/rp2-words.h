@@ -9,6 +9,18 @@ CONSTANT("LFS", LFS, (uintptr_t) &rp2_littlefs)
 #undef  LINK
 #define LINK LFS
 
+CONSTANT("LFS_INFO_SIZE", LFS_INFO_SIZE, sizeof(struct lfs_info))
+#undef  LINK
+#define LINK LFS_INFO_SIZE
+
+CONSTANT("LFS_INFO-NAME", LFS_INFO_NAME, offsetof(struct lfs_info, name))
+#undef  LINK
+#define LINK LFS_INFO_NAME
+
+CONSTANT("LFS_DIR_SIZE", LFS_DIR_SIZE, sizeof(lfs_dir_t))
+#undef  LINK
+#define LINK LFS_DIR_SIZE
+
 CONSTANT("LFS_FILE_SIZE", LFS_FILE_SIZE, sizeof(lfs_file_t))
 #undef  LINK
 #define LINK LFS_FILE_SIZE
@@ -60,6 +72,18 @@ EXPORT_FUNCTION(lfs_file_read)
 EXPORT_FUNCTION(lfs_file_write)
 #undef  LINK
 #define LINK FN_lfs_file_write
+
+EXPORT_FUNCTION(lfs_dir_open)
+#undef  LINK
+#define LINK FN_lfs_dir_open
+
+EXPORT_FUNCTION(lfs_dir_close)
+#undef  LINK
+#define LINK FN_lfs_dir_close
+
+EXPORT_FUNCTION(lfs_dir_read)
+#undef  LINK
+#define LINK FN_lfs_dir_read
 
 EXPORT_FUNCTION(exit)
 #undef  LINK

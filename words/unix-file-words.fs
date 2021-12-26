@@ -47,6 +47,25 @@
 	FN-unlink CCALL1 SX32
 	;
 
+: OPEN-DIR	( addr u -- dirp ior)
+	CSTRING
+	FN-opendir CCALL1
+	DUP 0=
+        ;
+
+: CLOSE-DIR	( dirp -- ior )
+	FN-closedir CCALL1 SX32
+        ;
+
+: READ-DIR	( dirp -- c-addr u )
+	FN-readdir CCALL1
+	DUP 0= IF
+		0 EXIT	( stack is NULL 0 if there is nothing left to enumerate )
+	THEN
+	DIRENT_D_NAME +	( find the d_name field )
+	DUP STRLEN	( convert C-string to Forth string )
+	;
+
 : INCLUDE	( -- )
 	WORD R/O OPEN-FILE
 	0= IF

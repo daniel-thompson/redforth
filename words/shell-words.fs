@@ -36,6 +36,30 @@
 	WORD CAT-FILE
 	;
 
+: LS-DIRID	( dirp -- dirp )
+	BEGIN
+		DUP READ-DIR
+	DUP 0<> WHILE
+		TYPE CR
+	REPEAT
+	2DROP
+	;
+
+: LS-FILE	( addr c -- )
+	OPEN-DIR
+	IF
+		." Error: Cannot open directory" CR
+		EXIT
+	THEN
+	LS-DIRID
+	CLOSE-DIR DROP
+	;
+
+
+: LS		( -- )
+	S" ." LS-FILE
+	;
+
 : STRCHR	( addr c ch -- addr c )
 	DUP 0 DO
 			( addr c ch )
