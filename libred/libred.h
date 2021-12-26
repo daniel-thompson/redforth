@@ -41,6 +41,8 @@ struct codefield {
 
 struct codefield *to_CFA(struct header *l);
 uint8_t *to_flags(struct header *l);
+inline const char *to_name(struct header *l) { return (char *)(l + 1); }
+struct header *from_CFA(struct codefield *cfa);
 struct header *do_FIND(const char *s, size_t n);
 void do_QUEUE(const char *input);
 char do_KEY(void);
@@ -51,6 +53,7 @@ char *do_WORD(void);
 void do_INCLUDE(char *fname);
 void do_EXUDE(char *fname);
 void do_REBOOT();
+
 
 /*
  * FORTH EXECUTION  ---------------------------------------------------------
@@ -82,6 +85,15 @@ void rf_forth_exec(struct forth_task *ctx);
 /* Classic C pre-processor macros to expand and join tokens */
 #define GLUE2(x, y) x ## y
 #define GLUE(x, y) GLUE2(x, y)
+
+#ifdef ENABLE_TRACE
+void trace_DOCOL(struct forth_task *ctx, void *codeword, cell_t *dsp, cell_t *rsp);
+void trace_EXIT(struct forth_task *ctx, cell_t *dsp, cell_t *rsp);
+#else /* ENABLE_TRACE */
+inline void trace_DOCOL(struct forth_task *ctx, void *codeword, cell_t *dsp, cell_t *rsp) {}
+inline void trace_EXIT(struct forth_task *ctx, cell_t *dsp, cell_t *rsp) {}
+#endif /* ENABLE_TRACE */
+
 
 /*
  * Needed for unix-words.h  -------------------------------------------------

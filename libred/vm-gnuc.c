@@ -176,6 +176,7 @@ void rf_forth_exec(struct forth_task *ctx)
 
 DOCOL:
 	PUSHRSP((cell_t) { .p = ip });
+	trace_DOCOL(ctx, codeword, dsp, rsp);
         ip = (void ***)(codeword + (sizeof(struct codefield) / sizeof(void *)));
         RAW_NEXT();
 
@@ -210,6 +211,9 @@ DOCOL:
 #endif
 #ifdef HAVE_TOOLS_WORDS
 #include "tools-words.h"
+#endif
+#ifdef HAVE_SHELL_WORDS
+#include "shell-words.h"
 #endif
 
 start:

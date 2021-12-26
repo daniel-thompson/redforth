@@ -287,6 +287,7 @@ QNATIVE(INVERT) /* ( a -- ~a ) */
 QNATIVE(EXIT)
 #undef  LINK
 #define LINK EXIT
+	trace_EXIT(ctx, dsp, rsp);
 	ip = POPRSP().p;
 	NEXT();
 
@@ -299,6 +300,7 @@ QNATIVE(EXIT)
 QNATIVE(SECRET_EXIT)
 #undef  LINK
 #define LINK SECRET_EXIT
+	trace_EXIT(ctx, dsp, rsp);
 	ip = POPRSP().p;
 	NEXT();
 

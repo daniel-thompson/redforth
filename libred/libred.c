@@ -29,6 +29,17 @@ uint8_t *to_flags(struct header *l)
 	return cf - 1;
 }
 
+struct header *from_CFA(struct codefield *cf)
+{
+	uint8_t *flags = ((uint8_t *) cf) - 1;
+	size_t offset = (*flags & F_LENMASK) * sizeof(void *);
+	/* name is technically a char * but is more useful in this form */
+	struct header *name = (void *) (((uint8_t *) cf) - offset);
+
+	return name - 1;
+}
+
+
 static int strncmp_toupper(const char *s1, const char *s2, size_t n)
 {
 	while (n--) {
@@ -158,3 +169,58 @@ char *do_WORD(void)
 
 	return buf;
 }
+
+#ifdef ENABLE_TRACE
+static void trace_stack(cell_t *s0, cell_t *sp)
+{
+	int depth = s0 - sp;
+	fprintf(stderr, "<%d> ", depth);
+
+	if (depth > 8) {
+		fprintf(stderr, " ...");
+		depth = 8;
+	}
+
+	for (int i=depth-1; i>=0; i--)
+		fprintf(stderr, " %"PRIdPTR, sp[i].u);
+}
+
+void trace_DOCOL(struct forth_task *ctx, void *codeword, cell_t *dsp,
+		 cell_t *rsp)
+{
+	cell_t *r0 = (cell_t *) ctx->rsp;
+	cell_t *s0 = (cell_t *) ctx->dsp;
+
+	/* indent to the current stack level */
+	int depth = r0 - rsp;
+	for (int i=0; i<depth; i++)
+		fprintf(stderr, "  ");
+
+	/* Look up the codeword name */
+	fprintf(stderr, "%s {\t\t", to_name(from_CFA(codeword)));
+
+	/* Show the stack */
+	trace_stack(s0, dsp);
+
+	fprintf(stderr, "\n");
+}
+
+void trace_EXIT(struct forth_task *ctx, cell_t *dsp, cell_t *rsp)
+{
+	cell_t *r0 = (cell_t *) ctx->rsp;
+	cell_t *s0 = (cell_t *) ctx->dsp;
+
+	/* indent to the current stack level */
+	int depth = r0 - rsp;
+	for (int i=0; i<depth; i++)
+		fprintf(stderr, "  ");
+
+	/* Look up the codeword name */
+	fprintf(stderr, "}\t\t");
+
+	/* Show the stack */
+	trace_stack(s0, dsp);
+
+	fprintf(stderr, "\n");
+}
+#endif /* ENABLE_TRACE */
