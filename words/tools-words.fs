@@ -311,6 +311,12 @@
 			[CHAR] 0 SWAP 1+ C!
 			2 +
 		ENDOF
+		'\n' OF
+			2DUP +
+			92 OVER C!
+			[CHAR] n SWAP 1+ C!
+			2 +
+		ENDOF
 		[CHAR] " OF
 			2DUP +
 			92 OVER C!
