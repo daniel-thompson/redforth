@@ -887,6 +887,32 @@
 	[ CHAR " 8 LSHIFT ] LITERAL
 	;
 
+: TOUPPER ( ascii -- ascii )
+	DUP [CHAR] a >= SWAP
+	DUP [CHAR] z <= ROT
+	AND IF
+		32 -
+	THEN
+	;
+
+: HEXDIGIT ( ascii -- u )
+	TOUPPER
+	DUP [CHAR] A >= IF
+		55
+	ELSE
+		48
+	THEN
+	-
+	;
+
+: HEXKEY ( -- u )
+	KEY HEXDIGIT
+	;
+
+: 2HEXKEY ( -- u )
+	HEXKEY 16 * HEXKEY +
+	;
+
 : \KEY		( -- ch )
 	KEY
 	DUP [CHAR] \ = IF
@@ -904,8 +930,9 @@
 		[CHAR] r OF DROP 13 ENDOF
 		[CHAR] t OF DROP 9 ENDOF
 		[CHAR] v OF DROP 11 ENDOF
+		( x is not a simple substitution, it is the full \x<hexdigit><hexdigit> )
+		[CHAR] x OF DROP 2HEXKEY ENDOF
 		[CHAR] z OF DROP 0 ENDOF
-		( \x<hexdigit><hexdight> is not implemented )
 		( default case covers \\, \" and friends by doing nothing )
 		ENDCASE
 	ELSE

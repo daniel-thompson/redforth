@@ -299,6 +299,7 @@ T{ S" ABC" 3 XSTR -> 3 CHAR A CHAR B CHAR C }T
 T{ S\" \"qu\"" 4 XSTR -> 4 CHAR " CHAR q CHAR u CHAR " }T
 T{ S\"  \" " 3 XSTR -> 3 BL CHAR " BL }T
 T{ S\" \a\b\e\f\l\q\r\t\v\z" 10 XSTR -> 10 7 8 27 12 10 34 13 9 11 0 }T
+T{ S\" \x00\e\x1b\x1B\x7f\x80\xff\xfF\xFF" 9 XSTR -> 9 0 27 27 27 127 128 255 255 255 }T
 T{ S\" \\\"\!" 3 XSTR -> 3 CHAR \ CHAR " CHAR ! }T
 T{ COMPSTR  3 XSTR -> 3 CHAR 1 CHAR 2 CHAR 3 }T
 T{ COMPSTR\ 3 XSTR -> 3 CHAR 1 CHAR 2 CHAR 3 }T
