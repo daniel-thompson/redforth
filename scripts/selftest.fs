@@ -294,6 +294,18 @@ OK
 : XSTR -ROT SWAP ROT 0 DO CH LOOP DROP ;
 : COMPSTR S" 123" ;
 : COMPSTR\ S\" \1\2\3" ;
+
+( Internal components )
+T{ CHAR a TOUPPER -> CHAR A }T
+T{ CHAR b TOUPPER -> CHAR B }T
+T{ CHAR y TOUPPER -> CHAR Y }T
+T{ CHAR z TOUPPER -> CHAR Z }T
+T{ CHAR A TOUPPER -> CHAR A }T
+T{ CHAR B TOUPPER -> CHAR B }T
+T{ CHAR Y TOUPPER -> CHAR Y }T
+T{ CHAR Z TOUPPER -> CHAR Z }T
+
+( Full integration tests)
 T{ S" A" 1 XSTR -> 1 CHAR A }T
 T{ S" ABC" 3 XSTR -> 3 CHAR A CHAR B CHAR C }T
 T{ S\" \"qu\"" 4 XSTR -> 4 CHAR " CHAR q CHAR u CHAR " }T
@@ -313,6 +325,7 @@ T{ S" 123" DROP COMPSTR DROP <> -> TRUE }T
 T{ COMPSTR DROP COMPSTR\ DROP <> -> TRUE }T
 FORGET CH
 OK
+
 
 ( --------------------------------------------------------------------------- )
 ." Return stack manipulation "
