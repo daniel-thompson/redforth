@@ -5,6 +5,8 @@
 # to test all builds in one-shot.
 #
 
+PORTS = native
+
 ifndef NO_ARMV7
 CROSS_COMPILE ?= arm-linux-musleabihf-
 PORTS += armv7
@@ -57,4 +59,6 @@ rp2-interact :
 
 test : all
 	$(MAKE) -C build/ test
+ifndef NO_ARMV7
 	$(MAKE) -C build-armv7/ test
+endif
