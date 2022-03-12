@@ -3,6 +3,8 @@
 BUILTIN-WORDS
 INCLUDE core-words.fs
 LATEST @
+INCLUDE extra-words.fs
+LATEST @
 INCLUDE debug-words.fs
 LATEST @
 INCLUDE file-words.fs
@@ -39,6 +41,13 @@ EXUDE debug-words.h
 ." #define RF_DEBUG_WORDS_H_" CR
 2DUP LIST>ROM DROP
 ." #endif /* RF_DEBUG_WORDS_H_*/" CR
+
+EXUDE extra-words.h
+." // Auto-generated from extra-words.fs" CR
+." #ifndef RF_EXTRA_WORDS_H_" CR
+." #define RF_EXTRA_WORDS_H_" CR
+2DUP LIST>ROM DROP
+." #endif /* RF_EXTRA_WORDS_H_*/" CR
 
 EXUDE core-words.h
 ." // Auto-generated from core.fs" CR

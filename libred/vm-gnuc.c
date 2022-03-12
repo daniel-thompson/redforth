@@ -197,6 +197,7 @@ DOCOL:
 #endif
 #ifdef HAVE_CORE_WORDS
 #include "core-words.h"
+#include "extra-words.h"
 #endif
 #ifdef HAVE_DEBUG_WORDS
 #include "debug-words.h"

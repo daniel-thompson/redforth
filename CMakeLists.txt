@@ -20,6 +20,7 @@ add_compile_options(-O2)
 
 set(FORTH_WORDS
 	core-words.h
+	extra-words.h
 	debug-words.h
 	file-words.h
 	rp2-file-words.h
