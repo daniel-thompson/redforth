@@ -284,6 +284,8 @@
 		[CHAR] @ OF S" FETCH"     STRCAT ENDOF
 		[CHAR] [ OF S" LBRAC"     STRCAT ENDOF
 		[CHAR] ] OF S" RBRAC"     STRCAT ENDOF
+		[CHAR] { OF S" LCBRAC"    STRCAT ENDOF
+		[CHAR] } OF S" RCBRAC"    STRCAT ENDOF
 		[CHAR] ~ OF S" TILDE"     STRCAT ENDOF
 		( default )
 			DUP 3 PICK 3 PICK + C!
@@ -341,7 +343,7 @@
 	2SWAP 2DROP
 ;
 
-( (>ROM) is the inner loop for SEE and it's roll is to decompiles the
+( (>ROM) is the inner loop for SEE and it's role is to decompile the
   codeword.
 
   In order to handle immediate values (LIT, LITSTRING and ') we may
@@ -369,7 +371,7 @@
 			." 	COMPILE_LIT(" ( 0 .R ) . ." )" CR	( and print it )
 		THEN THEN
 	ENDOF
-	' CLITSTRING OF		( is it LITSTRING ? )
+	' CLITSTRING OF		( is it CLITSTRING ? )
 		." 	COMPILE_CLITSTRING(" [CHAR] " EMIT
 		1 CELLS + DUP @		( get the length word )
 		SWAP 1 CELLS + SWAP     ( end start+4 length )
