@@ -5,6 +5,9 @@
 # to test all builds in one-shot.
 #
 
+# This isn't optional since all other builds will require a native build in
+# order to have access to the crossforth binary (which is used to convert
+# Forth source into C headers)
 PORTS = native
 
 ifndef NO_ARMV7
