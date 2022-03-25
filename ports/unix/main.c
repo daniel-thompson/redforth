@@ -77,6 +77,7 @@ int main(int argc, const char *argv[])
 		}
 	}
 
+	rf_forth_init_completions();
 	rf_forth_exec(&task);
 	printf(" unexpected VM exit\n");
 

@@ -7,6 +7,7 @@
 #include <fcntl.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <unistd.h>
 
 #include "linenoise.h"
@@ -20,6 +21,22 @@ static int fd_out = STDOUT_FILENO;
 static char *line;
 static const char *pending_input;
 static const char newline[] = "\n";
+
+static void complete(const char *buf, linenoiseCompletions *lc)
+{
+	int n = strlen(buf);
+
+	for (struct header *node = var_LATEST; node; node = node->next) {
+		char *name = (char *) (node + 1);
+		if (0 == strncmp_toupper(name, buf, n))
+			linenoiseAddCompletion(lc, name);
+	}
+}
+
+void rf_forth_init_completions(void)
+{
+	linenoiseSetCompletionCallback(complete);
+}
 
 void do_QUEUE(const char *input)
 {
@@ -71,7 +88,7 @@ char do_KEY(void)
 	}
 
 	do {
-		line = linenoise("");
+		line = linenoise("ok> ");
 		if (!line)
 			exit(0);
 	} while (line[0] == '\0');

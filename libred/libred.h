@@ -39,6 +39,8 @@ struct codefield {
 	void *codeword;	//!< codeword is expected to be the first item in the codefield
 };
 
+int strncmp_toupper(const char *s1, const char *s2, size_t n);
+
 struct codefield *to_CFA(struct header *l);
 uint8_t *to_flags(struct header *l);
 inline const char *to_name(struct header *l) { return (char *)(l + 1); }
@@ -73,6 +75,7 @@ extern struct header *var_LATEST;
 extern cell_t var_SOURCE_ID;
 extern uintptr_t var_LINENO;
 
+void rf_forth_init_completions(void);
 void rf_forth_exec(struct forth_task *ctx);
 
 /*

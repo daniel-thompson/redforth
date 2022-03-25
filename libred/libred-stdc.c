@@ -16,6 +16,10 @@ static FILE *rf_out = NULL;
 
 static const char *pending_input;
 
+void rf_forth_init_completions(void)
+{
+}
+
 void do_QUEUE(const char *input)
 {
 	pending_input = input;

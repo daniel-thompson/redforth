@@ -40,7 +40,7 @@ struct header *from_CFA(struct codefield *cf)
 }
 
 
-static int strncmp_toupper(const char *s1, const char *s2, size_t n)
+int strncmp_toupper(const char *s1, const char *s2, size_t n)
 {
 	while (n--) {
 		int d = *s1++ - toupper(*s2++);
@@ -53,7 +53,8 @@ static int strncmp_toupper(const char *s1, const char *s2, size_t n)
 
 static struct header *inner_FIND(const char *s, size_t n,
 			  int (*cmp)(const char *s1, const char *s2, size_t n))
-{	struct header *node = var_LATEST;
+{
+	struct header *node = var_LATEST;
 
 	while (node) {
 		char *name = (char *) (node + 1);
